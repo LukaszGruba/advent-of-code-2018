@@ -23,7 +23,7 @@ object ChronalCalibration {
 
   def solvePart1() = {
     val startingFreq = 0
-    val input = Source.fromResource("input").mkString
+    val input = Source.fromResource("day1-input").mkString
 
     val ops = parseOperations(input)
     val result = ops.foldLeft(startingFreq){ case(res, f) => f(res) }
@@ -32,7 +32,7 @@ object ChronalCalibration {
 
   def solvePart2() = {
     val startingFreq = 0
-    val input = Source.fromResource("input").mkString
+    val input = Source.fromResource("day1-input").mkString
 
     val ops = Stream.continually(parseOperations(input)).flatten
 
