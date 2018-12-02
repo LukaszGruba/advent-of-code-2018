@@ -4,6 +4,6 @@ import scala.io.Source
 
 object InputLoader {
 
-  def load(resourcePath: String): String = Source.fromResource(resourcePath).mkString
+  def loadLines(resourcePath: String): List[String] = Source.fromResource(resourcePath).mkString.lines.toList
 
 }

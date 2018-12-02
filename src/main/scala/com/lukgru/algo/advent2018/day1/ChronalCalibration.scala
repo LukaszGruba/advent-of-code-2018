@@ -24,7 +24,7 @@ object ChronalCalibration {
 
   def solvePart1() = {
     val startingFreq = 0
-    val input = load("day1-input")
+    val input = loadLines("day1-input")
 
     val ops = parseOperations(input)
     val result = ops.foldLeft(startingFreq) { case (res, f) => f(res) }
@@ -33,7 +33,7 @@ object ChronalCalibration {
 
   def solvePart2() = {
     val startingFreq = 0
-    val input = load("day1-input")
+    val input = loadLines("day1-input")
 
     val ops = Stream.continually(parseOperations(input)).flatten
 
