@@ -1,7 +1,8 @@
 package com.lukgru.algo.advent2018.day1
 
+import com.lukgru.algo.advent2018.utils.InputLoader._
+
 import scala.annotation.tailrec
-import scala.io.Source
 
 object ChronalCalibration {
 
@@ -23,16 +24,16 @@ object ChronalCalibration {
 
   def solvePart1() = {
     val startingFreq = 0
-    val input = Source.fromResource("day1-input").mkString
+    val input = load("day1-input")
 
     val ops = parseOperations(input)
-    val result = ops.foldLeft(startingFreq){ case(res, f) => f(res) }
+    val result = ops.foldLeft(startingFreq) { case (res, f) => f(res) }
     println(result)
   }
 
   def solvePart2() = {
     val startingFreq = 0
-    val input = Source.fromResource("day1-input").mkString
+    val input = load("day1-input")
 
     val ops = Stream.continually(parseOperations(input)).flatten
 
@@ -44,6 +45,7 @@ object ChronalCalibration {
         findRepeatFreq(ops.head(freq), ops.tail, visited + freq)
       }
     }
+
     val solution = findRepeatFreq(startingFreq, ops, Set.empty)
     println(solution)
   }
