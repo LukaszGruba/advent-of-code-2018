@@ -1,6 +1,6 @@
 package com.lukgru.algo.advent2018.day2
 
-import com.lukgru.algo.advent2018.day2.InventoryManagementSystem.containsDuplicates
+import com.lukgru.algo.advent2018.day2.InventoryManagementSystem._
 
 class InventoryManagementSystemTest extends org.scalatest.FunSuite {
 
@@ -36,4 +36,29 @@ class InventoryManagementSystemTest extends org.scalatest.FunSuite {
     //then
     assert(!contains2s)
   }
+
+  test("should find common letters when differs by 1 letter") {
+    //given
+    val str1 = "aabcdeefa"
+    val str2 = "aabcceefa"
+
+    //when
+    val commons = commonLetters(str1, str2)
+
+    //then
+    assert(commons == "aabceefa")
+  }
+
+  test("should find common letters when different word lengths") {
+    //given
+    val str1 = "aabcdeefa"
+    val str2 = "abcefa"
+
+    //when
+    val commons = commonLetters(str1, str2)
+
+    //then
+    assert(commons == "a")
+  }
+
 }

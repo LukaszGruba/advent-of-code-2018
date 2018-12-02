@@ -16,11 +16,7 @@ object ChronalCalibration {
     }
   }
 
-  def parseOperations(opsString: String): List[Int => Int] = {
-    opsString.lines
-      .map(parseOperation)
-      .toList
-  }
+  def parseOperations(ops: List[String]): List[Int => Int] = ops.map(parseOperation)
 
   def solvePart1() = {
     val startingFreq = 0
