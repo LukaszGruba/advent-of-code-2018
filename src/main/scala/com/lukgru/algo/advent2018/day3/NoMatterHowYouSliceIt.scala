@@ -32,7 +32,9 @@ object NoMatterHowYouSliceIt {
     duplicates.keys.toSet
   }
 
-  def getNonOverlappingRectangle(rectangles: List[Rectangle], overlaps: Set[(Int, Int)]): Rectangle = ???
+  def getNonOverlappingRectangle(rectangles: List[Rectangle], overlaps: Set[(Int, Int)]): Rectangle = {
+    rectangles.find(rect => areaPoints(rect).forall(p => !overlaps.contains(p))).get
+  }
 
   def solvePart1(): Unit = {
     val input = InputLoader.loadLines("day3-input")
@@ -51,5 +53,6 @@ object NoMatterHowYouSliceIt {
 
   def main(args: Array[String]): Unit = {
     solvePart1()
+    solvePart2()
   }
 }
