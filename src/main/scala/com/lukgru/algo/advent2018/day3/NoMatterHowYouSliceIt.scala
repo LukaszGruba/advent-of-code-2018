@@ -19,24 +19,34 @@ object NoMatterHowYouSliceIt {
          y <- rect.y until rect.y + rect.height)
       yield (x, y)
   }
-  
+
   def areaPointsList(rectangles: List[Rectangle]): List[(Int, Int)] = {
     rectangles.foldLeft(List.empty[(Int,Int)]) { case (points, rectangle) => points ++ areaPoints(rectangle) }
   }
 
-  def calcOverlapArea(rectangles: List[Rectangle]): Int = {
+  def calcOverlaps(rectangles: List[Rectangle]): Set[(Int, Int)] = {
     val allPoints = areaPointsList(rectangles)
     val duplicates = allPoints.groupBy(identity)
         .map { case (k, list) => (k, list.size)}
         .filter { case (_, size) => size > 1}
-    duplicates.size
+    duplicates.keys.toSet
   }
+
+  def getNonOverlappingRectangle(rectangles: List[Rectangle], overlaps: Set[(Int, Int)]): Rectangle = ???
 
   def solvePart1(): Unit = {
     val input = InputLoader.loadLines("day3-input")
     val rectangles = parseRectangles(input)
-    val overlapArea = calcOverlapArea(rectangles)
+    val overlapArea = calcOverlaps(rectangles).size
     println(overlapArea)
+  }
+
+  def solvePart2(): Unit = {
+    val input = InputLoader.loadLines("day3-input")
+    val rectangles = parseRectangles(input)
+    val overlaps = calcOverlaps(rectangles)
+    val nonOverlappingPieceId = getNonOverlappingRectangle(rectangles, overlaps)
+    println(nonOverlappingPieceId)
   }
 
   def main(args: Array[String]): Unit = {

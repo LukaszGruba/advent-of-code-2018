@@ -36,7 +36,7 @@ class NoMatterHowYouSliceItTest extends FunSuite {
     )
 
     //when
-    val overlapArea = NoMatterHowYouSliceIt.calcOverlapArea(rectangles)
+    val overlapArea = NoMatterHowYouSliceIt.calcOverlaps(rectangles).size
 
     //then
     assert(overlapArea == 4)
@@ -51,7 +51,7 @@ class NoMatterHowYouSliceItTest extends FunSuite {
     )
 
     //when
-    val overlapArea = NoMatterHowYouSliceIt.calcOverlapArea(rectangles)
+    val overlapArea = NoMatterHowYouSliceIt.calcOverlaps(rectangles).size
 
     //then
     assert(overlapArea == 28)
