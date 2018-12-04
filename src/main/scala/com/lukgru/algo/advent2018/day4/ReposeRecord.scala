@@ -96,9 +96,9 @@ object ReposeRecord {
   def main(args: Array[String]): Unit = {
     val input = InputLoader.loadLines("day4-input")
     val solution1 = solvePart1(input)
-    println(solution1._1 * solution1._2)
+    println(solution1)
 
     val solution2 = solvePart2(input)
-    println(solution2._1 * solution2._2)
+    println(solution2)
   }
 }

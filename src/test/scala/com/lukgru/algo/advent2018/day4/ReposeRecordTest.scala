@@ -1,5 +1,6 @@
 package com.lukgru.algo.advent2018.day4
 
+import com.lukgru.algo.advent2018.utils.InputLoader
 import org.scalatest.FunSuite
 
 class ReposeRecordTest extends FunSuite {
@@ -113,6 +114,28 @@ class ReposeRecordTest extends FunSuite {
 
     //then
     assert(mostSleepyGuard.id == 10)
+  }
+
+  test("should solve part 1") {
+    //given
+    val input = InputLoader.loadLines("day4-input")
+
+    //when
+    val solution = ReposeRecord.solvePart1(input)
+
+    //then
+    assert(solution == (1601,46))
+  }
+
+  test("should solve part 2") {
+    //given
+    val input = InputLoader.loadLines("day4-input")
+
+    //when
+    val solution = ReposeRecord.solvePart2(input)
+
+    //then
+    assert(solution == (163,29))
   }
 
 }
