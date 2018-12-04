@@ -57,7 +57,7 @@ object ReposeRecord {
     val logsByShift = groupLogsByShift(logLines)
     val shiftsByGuard = logsByShift.map(logsToShift)
     shiftsByGuard.groupBy(_._1)
-      .map { case (guardId, shiftsWithIds) => Guard(guardId, shiftsWithIds.map(_._2))}
+      .map { case (guardId, shiftsWithIds) => Guard(guardId, shiftsWithIds.map(_._2)) }
       .toList
   }
 
@@ -65,25 +65,40 @@ object ReposeRecord {
     guards.maxBy(g => g.shifts.map(_.minutesAsleep.size).sum)
   }
 
-  def findMostSleepyMinute(guard: Guard): Int = {
-    guard.shifts
+  def findMostSleepyMinuteWithOccurrences(guard: Guard): (Int, Int) = {
+    val minutesWithOccurrencesMap = guard.shifts
       .flatMap(_.minutesAsleep)
       .groupBy(identity)
-      .maxBy { case (_, occurrences) => occurrences.length }
-      ._1
+      .map { case (minute, occurrences) => (minute, occurrences.length) }
+
+    if (minutesWithOccurrencesMap.nonEmpty)
+      minutesWithOccurrencesMap.maxBy(_._2)
+    else
+      (-1, -1)
   }
 
   def solvePart1(input: List[String]): (Int, Int) = {
     val guards = parseGuards(input)
-    println(guards)
     val mostSleepyGuard = findMostSleepyGuard(guards)
-    val mostSleepyMinute = findMostSleepyMinute(mostSleepyGuard)
-    (mostSleepyGuard.id, mostSleepyMinute)
+    val mostSleepyMinute = findMostSleepyMinuteWithOccurrences(mostSleepyGuard)
+    (mostSleepyGuard.id, mostSleepyMinute._1)
+  }
+
+  def solvePart2(input: List[String]): (Int, Int) = {
+    val guards = parseGuards(input)
+    val (id, (minute, _)) =
+      guards
+        .map(g => (g.id, findMostSleepyMinuteWithOccurrences(g)))
+        .maxBy { case (_, occurrences) => occurrences._2 }
+    (id, minute)
   }
 
   def main(args: Array[String]): Unit = {
     val input = InputLoader.loadLines("day4-input")
-    val solution = solvePart1(input)
-    println(solution._1 * solution._2)
+    val solution1 = solvePart1(input)
+    println(solution1._1 * solution1._2)
+
+    val solution2 = solvePart2(input)
+    println(solution2._1 * solution2._2)
   }
 }
