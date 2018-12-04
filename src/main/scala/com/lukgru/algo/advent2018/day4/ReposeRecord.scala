@@ -4,7 +4,7 @@ import com.lukgru.algo.advent2018.utils.InputLoader
 
 object ReposeRecord {
 
-  case class Shift(minutesAwake: Set[Int])
+  case class Shift(minutesAsleep: Set[Int])
 
   case class Guard(id: Int, shifts: List[Shift])
 
@@ -28,25 +28,29 @@ object ReposeRecord {
   }
 
   def parseLogLine(line: String): (Int, Boolean) = {
-    val pattern = "\\[\\d{4}-\\d{2}-\\d{2} \\d{2}:(\\d{2})\\].*".r
-    val pattern(minute) = line
-    val fallsAsleep = line.contains("falls asleep")
-    (minute.toInt, fallsAsleep)
+    val pattern = "\\[(\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}):(\\d{2})\\].*".r
+    val pattern(year, month, day, hour, minute) = line
+    val isAwake = !line.contains("falls asleep")
+    if (hour.toInt == 0)
+      (minute.toInt, isAwake)
+    else
+      (0, isAwake)
   }
 
-  def logsToShift(logs: List[String]): (Int, Shift) = {
-    val guardId = parseGuardIdLine(logs.head)
-    val events = logs.map(parseLogLine).toMap
+  def logsToShift(shiftLogs: List[String]): (Int, Shift) = {
+    val guardId = parseGuardIdLine(shiftLogs.head)
+    val startingMinute = parseLogLine(shiftLogs.head)._1
+    val events = shiftLogs.map(parseLogLine).toMap
 
-    var isAsleep = false
+    var isAwake = true
     val minutes =
-      for (minute <- 0 until 60) yield {
-        isAsleep = events.getOrElse(minute, isAsleep)
-        if (isAsleep) -1
+      for (minute <- startingMinute until 60) yield {
+        isAwake = events.getOrElse(minute, isAwake)
+        if (isAwake) -1
         else minute
       }
-    val minutesAwake = minutes.filter(_ >= 0).toSet
-    (guardId, Shift(minutesAwake))
+    val minutesAsleep = minutes.filter(_ >= 0).toSet
+    (guardId, Shift(minutesAsleep))
   }
 
   def parseGuards(logLines: List[String]): List[Guard] = {
@@ -58,12 +62,12 @@ object ReposeRecord {
   }
 
   def findMostSleepyGuard(guards: List[Guard]): Guard = {
-    guards.minBy(g => g.shifts.map(_.minutesAwake.size).sum)
+    guards.maxBy(g => g.shifts.map(_.minutesAsleep.size).sum)
   }
 
   def findMostSleepyMinute(guard: Guard): Int = {
     guard.shifts
-      .flatMap(_.minutesAwake)
+      .flatMap(_.minutesAsleep)
       .groupBy(identity)
       .maxBy { case (_, occurrences) => occurrences.length }
       ._1
@@ -71,6 +75,7 @@ object ReposeRecord {
 
   def solvePart1(input: List[String]): (Int, Int) = {
     val guards = parseGuards(input)
+    println(guards)
     val mostSleepyGuard = findMostSleepyGuard(guards)
     val mostSleepyMinute = findMostSleepyMinute(mostSleepyGuard)
     (mostSleepyGuard.id, mostSleepyMinute)
@@ -79,6 +84,6 @@ object ReposeRecord {
   def main(args: Array[String]): Unit = {
     val input = InputLoader.loadLines("day4-input")
     val solution = solvePart1(input)
-    println(solution)
+    println(solution._1 * solution._2)
   }
 }
