@@ -18,13 +18,26 @@ object AlchemicalReduction {
             else
               acc + c
           )
-          .getOrElse("" + c)
+          .getOrElse(c.toString)
     }
+  }
+
+  def removeUnit(polymer: String)(unit: Char): String =
+    polymer.replace(unit.toString, "").replace(unit.toUpper.toString, "")
+
+  def optimizedReduce(polymer: String): String = {
+    def opt: Char => String = removeUnit(polymer)
+    ('a' to 'z').map(opt)
+      .map(reduce)
+      .minBy(_.length)
   }
 
   def main(args: Array[String]): Unit = {
     val input = InputLoader.loadLines("day5-input").head
     val solution1 = reduce(input)
     println(solution1.length)
+
+    val solution2 = optimizedReduce(input)
+    println(solution2.length)
   }
 }
