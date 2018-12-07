@@ -88,10 +88,30 @@ object ChronalCoordinates {
       ._2
   }
 
+  def solvePart2(input: List[String]): Int = {
+    val coords =
+      input.zipWithIndex
+        .map { case (line, name) =>
+          val (x, y) = parseLine(line)
+          Coordinate(x, y, name.toString)
+        }
+    val mapBoundary = calcMapBoundary(coords)
+    var result = 0
+    for (x <- mapBoundary._1 to mapBoundary._2;
+         y <- mapBoundary._3 to mapBoundary._4) {
+      val totalDistance = coords.map(c => calcDistance((c.x, c.y), (x, y))).sum
+      if (totalDistance < 10000) result += 1
+    }
+    result
+  }
+
   def main(args: Array[String]): Unit = {
     val input = InputLoader.loadLines("day6-input")
-    val solution = solvePart1(input)
-    println(solution)
+    val solution1 = solvePart1(input)
+    println(solution1)
+
+    val solution2 = solvePart2(input)
+    println(solution2)
   }
 
 }
