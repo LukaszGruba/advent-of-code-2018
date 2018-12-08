@@ -23,10 +23,21 @@ object MemoryManeuver {
   def traverseTree[A](f: Node => A, reducer: (A, A) => A)(node: Node): A = {
     val nodesResult = f(node)
     if (node.children.nonEmpty) {
-      val childrenResult = node.children.map(traverseTree(f,reducer)).reduce(reducer)
+      val childrenResult = node.children.map(traverseTree(f, reducer)).reduce(reducer)
       reducer(nodesResult, childrenResult)
     } else {
       nodesResult
+    }
+  }
+
+  def calcNodeValue(node: Node): Int = {
+    if (node.children.isEmpty) node.metadata.sum
+    else {
+      node.metadata.flatMap { index =>
+        if (index <= node.children.length) {
+          Some(calcNodeValue(node.children(index - 1)))
+        } else None
+      }.sum
     }
   }
 
@@ -36,10 +47,19 @@ object MemoryManeuver {
     traverseTree(_.metadata.sum, (a: Int, b: Int) => a + b)(tree)
   }
 
+  def solvePart2(input: String): Int = {
+    val data = input.split(" ").map(_.toInt).toList
+    val (tree, _) = parseTree(data)
+    calcNodeValue(tree)
+  }
+
   def main(args: Array[String]): Unit = {
     val input = InputLoader.loadLines("day8-input").head
     val solution1 = solvePart1(input)
     println(solution1)
+
+    val solution2 = solvePart2(input)
+    println(solution2)
   }
 
 }

@@ -42,13 +42,24 @@ class MemoryManeuverTest extends FunSuite {
 
   test("should solve part 1") {
     //given
-    val input = InputLoader.loadLines("day8-input")(0)
+    val input = InputLoader.loadLines("day8-input").head
 
     //when
     val result = MemoryManeuver.solvePart1(input)
 
     //then
     assert(result == 47464)
+  }
+
+  test("should solve part 2") {
+    //given
+    val input = InputLoader.loadLines("day8-input").head
+
+    //when
+    val result = MemoryManeuver.solvePart2(input)
+
+    //then
+    assert(result == 23054)
   }
 
 }
