@@ -1,7 +1,5 @@
 package com.lukgru.algo.advent2018.day9
 
-import java.util.Date
-
 import scala.annotation.tailrec
 
 object MarbleMania {
