@@ -1,65 +1,67 @@
 package com.lukgru.algo.advent2018.day9
 
+import java.util.Date
+
 import scala.annotation.tailrec
 
 object MarbleMania {
 
-  case class Elf(id: Int, marbles: List[Marble] = List.empty)
+  case class Elf(id: Int, marbles: Vector[Marble] = Vector.empty)
 
   case class Marble(no: Int)
 
-  def nextElf(queue: List[Elf]): (Elf, List[Elf]) = (queue.head, queue.tail)
+  def nextElf(queue: Vector[Elf]): (Elf, Vector[Elf]) = (queue.head, queue.tail)
 
-  def takeMarble(marbles: List[Marble]): (Marble, List[Marble]) = (marbles.head, marbles.tail)
+  def takeMarble(marbles: Vector[Marble]): (Marble, Vector[Marble]) = (marbles.head, marbles.tail)
 
-  def goToTheEnd(elf: Elf, restOfQueue: List[Elf]): List[Elf] = restOfQueue :+ elf
+  def goToTheEnd(elf: Elf, restOfQueue: Vector[Elf]): Vector[Elf] = restOfQueue :+ elf
 
-  def createQueue(numberOfElves: Int): List[Elf] =
+  def createQueue(numberOfElves: Int): Vector[Elf] =
     Stream.from(1)
       .map(Elf(_))
       .take(numberOfElves)
-      .toList
+      .toVector
 
-  def createMarbles(numberOfMarbles: Int): List[Marble] =
+  def createMarbles(numberOfMarbles: Int): Vector[Marble] =
     Stream.from(0)
       .map(Marble)
       .take(numberOfMarbles)
-      .toList
+      .toVector
 
-  def playMarbles(numberOfPlayers: Int, lastMarbleValue: Int): Int = {
+  def playMarbles(numberOfPlayers: Int, lastMarbleValue: Int): Long = {
     val elves = createQueue(numberOfPlayers)
     val marbles = createMarbles(lastMarbleValue)
 
     val (firstMarble, rest) = takeMarble(marbles)
-    val circle = List(firstMarble)
+    val circle = Vector(firstMarble)
 
     val winner = play(circle, elves, rest)
     winner.marbles
-      .map(_.no)
+      .map(_.no.toLong)
       .sum
   }
 
-  def placeMarbleInTheCircle(marble: Marble, circle: List[Marble]): List[Marble] =
+  def placeMarbleInTheCircle(marble: Marble, circle: Vector[Marble]): Vector[Marble] =
     circle match {
-      case only :: Nil => marble :: only :: Nil
-      case curr :: fst :: rest => (marble :: rest) ++ List(curr, fst)
+      case Vector(only) => Vector(marble, only)
+      case curr +: fst +: rest => (marble +: rest) ++ Vector(curr, fst)
     }
 
-  def popOut7thMarbleBefore(circle: List[Marble]): (Marble, List[Marble]) = {
+  def popOut7thMarbleBefore(circle: Vector[Marble]): (Marble, Vector[Marble]) = {
     val (newTail, newInit) = circle.splitAt(circle.length - 7)
     (newInit.head, newInit.tail ++ newTail)
   }
 
-  def winMarble(currentElf: Elf, currentCircle: List[Marble], marble: Marble): (Elf, List[Marble]) = {
+  def winMarble(currentElf: Elf, currentCircle: Vector[Marble], marble: Marble): (Elf, Vector[Marble]) = {
     val (additionalMarble, newCircle) = popOut7thMarbleBefore(currentCircle)
     val elf = currentElf.copy(marbles = currentElf.marbles :+ marble :+ additionalMarble)
     (elf, newCircle)
   }
 
   @tailrec
-  def play(circle: List[Marble], elves: List[Elf], remainingMarbles: List[Marble]): Elf =
+  def play(circle: Vector[Marble], elves: Vector[Elf], remainingMarbles: Vector[Marble]): Elf =
     remainingMarbles match {
-      case Nil =>
+      case Vector() =>
         elves.maxBy { elf =>
           elf.marbles
             .map(_.no)
@@ -83,6 +85,9 @@ object MarbleMania {
 
     val solution1 = playMarbles(numberOfPlayers, lastMarbleValue)
     println(solution1)
+
+    val solution2 = playMarbles(numberOfPlayers, 100 * lastMarbleValue)
+    println(solution2)
   }
 
 }
