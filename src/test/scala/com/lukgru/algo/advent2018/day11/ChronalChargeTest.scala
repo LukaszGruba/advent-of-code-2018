@@ -11,7 +11,7 @@ class ChronalChargeTest extends FunSuite {
     val y = 5
 
     //when
-    val powerLevel = ChronalCharge.powerLevel(gridSerialNumber)(x, y)
+    val powerLevel = ChronalCharge.powerLevel(gridSerialNumber, x, y)
 
     //then
     assert(powerLevel == 4)
@@ -23,6 +23,17 @@ class ChronalChargeTest extends FunSuite {
 
     //then
     assert(maxSquare == (21, 54))
+  }
+
+  test("should solve part 2") {
+    //when
+    val (x, y, size, power) = ChronalCharge.solvePart2(4455)
+
+    //then
+    assert(x == 236)
+    assert(y == 268)
+    assert(size == 11)
+    assert(power == 74)
   }
 
 }
