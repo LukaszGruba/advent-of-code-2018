@@ -27,11 +27,13 @@ object ChronalCharge {
   }
 
   def solvePart2(gridSerialNumber: Int): (Int, Int, Int, Int) = {
-    (1 to 300).map { squareSize =>
-      val maxCoords = Timer.logTime(findMaxPowerSquareCoords(squareSize)(gridSerialNumber))
-      val value = squarePower(squareSize)(gridSerialNumber)(maxCoords._1, maxCoords._2)
-      (squareSize, maxCoords, value)
-    }
+    (1 to 300)
+      .par
+      .map { squareSize =>
+        val maxCoords = Timer.logTime(findMaxPowerSquareCoords(squareSize)(gridSerialNumber))
+        val value = squarePower(squareSize)(gridSerialNumber)(maxCoords._1, maxCoords._2)
+        (squareSize, maxCoords, value)
+      }
       .map { case (size, (x, y), value) => (x, y, size, value) }
       .maxBy(_._4)
   }
