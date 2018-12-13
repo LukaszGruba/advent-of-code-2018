@@ -2,6 +2,7 @@ package com.lukgru.algo.advent2018.day13
 
 import MineCartMadness.RoadOrientation.RoadOrientation
 import MineCartMadness._
+import com.lukgru.algo.advent2018.utils.InputLoader
 import org.scalatest.FunSuite
 
 class MineCartMadnessTest extends FunSuite {
@@ -11,7 +12,7 @@ class MineCartMadnessTest extends FunSuite {
     val carts = List(
       Cart(Position(19, 47), Direction.v),
       Cart(Position(10, 48), Direction.^),
-      Cart(Position(19, 47), Direction.E)
+      Cart(Position(19, 47), Direction.>)
     )
 
     //when
@@ -51,7 +52,7 @@ class MineCartMadnessTest extends FunSuite {
     val carts = parseCarts(input)
 
     //then
-    assert(carts == List(Cart(Position(2, 0), Direction.E), Cart(Position(9, 3), Direction.v)))
+    assert(carts == List(Cart(Position(2, 0), Direction.>), Cart(Position(9, 3), Direction.v)))
   }
 
   test("should parse roads") {
@@ -127,17 +128,35 @@ class MineCartMadnessTest extends FunSuite {
     assert(roads == expectedMap)
   }
 
-  test("should move cart") {
+  test("should go through simple line") {
     //given
     val cart = Cart(Position(5,3), Direction.v)
     val road = Map(
-      roadEntry(5, 3, RoadOrientation.|)
+      roadEntry(5, 3, RoadOrientation.|),
+      roadEntry(5, 4, RoadOrientation.\),
+      roadEntry(6, 4, RoadOrientation.-),
+      roadEntry(7, 4, RoadOrientation.\),
+      roadEntry(7, 5, RoadOrientation.|),
+      roadEntry(7, 6, RoadOrientation.+),
+      roadEntry(8, 6, RoadOrientation.-)
     )
 
     //when
+    val endingCartState = (1 to road.size).foldLeft(cart) { case (prevCart, _) => move(road)(prevCart) }
 
     //then
+    assert(endingCartState == Cart(Position(9, 6), Direction.>, JunctionManeuver.Left))
+  }
 
+  test("should solve part 1") {
+    //given
+    val input = InputLoader.loadLines("day13-input")
+
+    //when
+    val solution = solvePart1(input)
+
+    //then
+    assert(solution == (103, 85))
   }
 
   def roadEntry(x: Int, y: Int, orientation: RoadOrientation): (Position, Road) = {

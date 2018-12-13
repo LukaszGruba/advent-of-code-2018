@@ -1,6 +1,7 @@
 package com.lukgru.algo.advent2018.day13
 
 import com.lukgru.algo.advent2018.day13.MineCartMadness.Direction.Direction
+import com.lukgru.algo.advent2018.day13.MineCartMadness.JunctionManeuver.JunctionManeuver
 import com.lukgru.algo.advent2018.day13.MineCartMadness.RoadOrientation.RoadOrientation
 import com.lukgru.algo.advent2018.utils.InputLoader
 
@@ -16,9 +17,14 @@ object MineCartMadness {
     val |, -, /, \, + = Value
   }
 
+  object JunctionManeuver extends Enumeration {
+    type JunctionManeuver = Value
+    val Left, Straight, Right = Value
+  }
+
   case class Position(x: Int, y: Int)
 
-  case class Cart(position: Position, direction: Direction)
+  case class Cart(position: Position, direction: Direction, lastJunctionManeuver: JunctionManeuver = JunctionManeuver.Right)
 
   case class Road(position: Position, orientation: RoadOrientation)
 
@@ -65,12 +71,72 @@ object MineCartMadness {
       .toMap
   }
 
+  def turnLeft(direction: Direction): Direction = direction match {
+    case Direction.< => Direction.v
+    case Direction.^ => Direction.<
+    case Direction.> => Direction.^
+    case Direction.v => Direction.>
+  }
+
+  def turnRight(direction: Direction): Direction = direction match {
+    case Direction.< => Direction.^
+    case Direction.^ => Direction.>
+    case Direction.> => Direction.v
+    case Direction.v => Direction.<
+  }
+
+  def crossJunction(cart: Cart): (Direction, JunctionManeuver) = cart.lastJunctionManeuver match {
+    case JunctionManeuver.Left => (cart.direction, JunctionManeuver.Straight)
+    case JunctionManeuver.Straight => (turnRight(cart.direction), JunctionManeuver.Right)
+    case JunctionManeuver.Right => (turnLeft(cart.direction), JunctionManeuver.Left)
+  }
+
+  def nextDirection(cart: Cart, roadOrientation: RoadOrientation): (Direction, JunctionManeuver) =
+    (cart.direction, roadOrientation) match {
+      case (_, RoadOrientation.-) |
+           (_, RoadOrientation.|) => (cart.direction, cart.lastJunctionManeuver)
+      case (Direction.>, RoadOrientation./) |
+           (Direction.^, RoadOrientation.\) |
+           (Direction.<, RoadOrientation./) |
+           (Direction.v, RoadOrientation.\) => (turnLeft(cart.direction), cart.lastJunctionManeuver)
+      case (Direction.>, RoadOrientation.\) |
+           (Direction.^, RoadOrientation./) |
+           (Direction.<, RoadOrientation.\) |
+           (Direction.v, RoadOrientation./) => (turnRight(cart.direction), cart.lastJunctionManeuver)
+      case (_, RoadOrientation.+) => crossJunction(cart)
+    }
+
+  def nextPosition(position: Position, direction: Direction): Position = direction match {
+    case Direction.< => position.copy(x = position.x - 1)
+    case Direction.^ => position.copy(y = position.y - 1)
+    case Direction.> => position.copy(x = position.x + 1)
+    case Direction.v => position.copy(y = position.y + 1)
+  }
+
+  def move(road: Map[Position, Road])(cart: Cart): Cart = {
+    val currentRoad = road(cart.position)
+    val (cartsNewDirection, lastJunctionManeuver) = nextDirection(cart, currentRoad.orientation)
+    val cartsNewPosition = nextPosition(cart.position, cartsNewDirection)
+    Cart(cartsNewPosition, cartsNewDirection, lastJunctionManeuver)
+  }
+
   def detectCollision(allCarts: List[Cart]): Option[Position] =
     allCarts.groupBy(_.position)
       .find { case (_, carts) => carts.length > 1 }
       .map { case (pos, _) => pos }
 
-  def solvePart1(lines: List[String]): (Int, Int) = ???
+  def solvePart1(lines: List[String]): (Int, Int) = {
+    var carts = parseCarts(lines)
+    val road = parseRoads(lines)
+    val moveF = move(road) _
+
+    //TODO: get rid of var
+    while (detectCollision(carts).isEmpty) {
+      carts = carts.map(moveF)
+    }
+    val collisionPosition = detectCollision(carts).get
+    (collisionPosition.x, collisionPosition.y)
+  }
 
   def main(args: Array[String]): Unit = {
     val input = InputLoader.loadLines("day13-input")
