@@ -122,55 +122,12 @@ object MineCartMadness {
     Cart(cartsNewPosition, cartsNewDirection, lastJunctionManeuver)
   }
 
-  def detectCollision(allCarts: List[Cart]): Option[Position] =
-    allCarts.groupBy(_.position)
-      .find { case (_, carts) => carts.length > 1 }
-      .map { case (pos, _) => pos }
-
-  def eliminateCollisions(allCarts: List[Cart]): List[Cart] = {
-    allCarts.groupBy(_.position)
-      .filterNot { case (_, cartsWithSamePos) => cartsWithSamePos.length > 1 }
-      .map { case (pos, carts) => (pos, carts.head) }
-      .values
-      .toList
-  }
+  def collisionOccurred(allCarts: List[Cart]): Boolean =
+    allCarts
+      .groupBy(_.position)
+      .exists { case (_, carts) => carts.length > 1 }
 
   def sortByPosition(carts: List[Cart]): List[Cart] = carts.sortBy(c => (c.position.y, c.position.x))
-
-  object counter {
-    private var i = 0
-
-    def ++(): Unit = i += 1
-
-    def value(): Int = i
-  }
-
-  //  def findLastCartStanding(carts: List[Cart], roads: Map[Position, Road]): Cart = {
-  //    val moveF = move(roads) _
-  //    @tailrec
-  //    def find(toMove: List[Cart], moved: List[Cart]): Cart = {
-  //      printState(toMove ++ moved, roads)
-  //      counter.++()
-  //      if ((toMove ++ moved).length == 1) {
-  //        if (toMove.length == 1) toMove.head//moveF(toMove.head)
-  //        else moved.head
-  //      }
-  //      else if (toMove.isEmpty) {
-  //        find(sortByPosition(eliminateCollisions(moved)), List.empty)
-  //      }
-  //      else {
-  //        val afterFirstIsMoved = toMove.updated(0, moveF(toMove.head))
-  //        val withoutCollisions = sortByPosition(eliminateCollisions(afterFirstIsMoved))
-  //        if (withoutCollisions.head == afterFirstIsMoved.head) {
-  //          find(withoutCollisions.tail, moved :+ withoutCollisions.head)
-  //        }
-  //        else {
-  //          find(withoutCollisions, moved)
-  //        }
-  //      }
-  //    }
-  //    find(carts, List.empty)
-  //  }
 
   def findCollisions(carts: List[Cart]): List[Position] =
     carts.map(_.position)
@@ -233,34 +190,31 @@ object MineCartMadness {
     println(sb.mkString)
   }
 
-  def solvePart1(lines: List[String]): (Int, Int) = {
+  def findFirstCollision(lines: List[String]): (Int, Int) = {
     var carts = parseCarts(lines)
     val road = parseRoads(lines)
     val moveF = move(road) _
 
-    //TODO: get rid of var
-    while (detectCollision(carts).isEmpty) {
+    while (!collisionOccurred(carts)) {
       carts = carts.map(moveF)
     }
-    val collisionPosition = detectCollision(carts).get
-    (collisionPosition.x, collisionPosition.y)
+    val firstCollision = findCollisions(carts).head
+    (firstCollision.x, firstCollision.y)
   }
 
-  def solvePart2(lines: List[String]): (Int, Int) = {
+  def findLastCartStandingPosition(lines: List[String]): (Int, Int) = {
     val carts = parseCarts(lines)
     val roads = parseRoads(lines)
     val lastCartStanding = findLastCartStanding(sortByPosition(carts), roads)
-    printState(List(lastCartStanding), roads)
-    println(counter.value)
     (lastCartStanding.position.x, lastCartStanding.position.y)
   }
 
   def main(args: Array[String]): Unit = {
     val input = InputLoader.loadLines("day13-input")
-    val solution1 = solvePart1(input)
+    val solution1 = findFirstCollision(input)
     println(solution1)
 
-    val solution2 = solvePart2(input)
+    val solution2 = findLastCartStandingPosition(input)
     println(solution2)
   }
 

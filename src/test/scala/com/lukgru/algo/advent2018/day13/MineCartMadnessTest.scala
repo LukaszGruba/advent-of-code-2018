@@ -16,11 +16,10 @@ class MineCartMadnessTest extends FunSuite {
     )
 
     //when
-    val collision = detectCollision(carts)
+    val collision = collisionOccurred(carts)
 
     //then
-    assert(collision.isDefined)
-    assert(collision.get == Position(19, 47))
+    assert(collision)
   }
 
   test("should not detect collision if there is none") {
@@ -31,10 +30,10 @@ class MineCartMadnessTest extends FunSuite {
     )
 
     //when
-    val collision = detectCollision(carts)
+    val collision = collisionOccurred(carts)
 
     //then
-    assert(collision.isEmpty)
+    assert(!collision)
   }
 
   test("should parse carts") {
@@ -153,7 +152,7 @@ class MineCartMadnessTest extends FunSuite {
     val input = InputLoader.loadLines("day13-input")
 
     //when
-    val solution = solvePart1(input)
+    val solution = findFirstCollision(input)
 
     //then
     assert(solution == (103, 85))
@@ -172,7 +171,7 @@ class MineCartMadnessTest extends FunSuite {
     )
 
     //when
-    val lastCartStandingPosition = solvePart2(input)
+    val lastCartStandingPosition = findLastCartStandingPosition(input)
 
     //then
     assert(lastCartStandingPosition == (6, 4))
@@ -214,7 +213,7 @@ class MineCartMadnessTest extends FunSuite {
     val input = InputLoader.loadLines("day13-input")
 
     //when
-    val solution = solvePart2(input)
+    val solution = findLastCartStandingPosition(input)
 
     //then
     assert(solution == (88,64))
