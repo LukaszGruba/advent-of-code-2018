@@ -5,6 +5,8 @@ import com.lukgru.algo.advent2018.day13.MineCartMadness.JunctionManeuver.Junctio
 import com.lukgru.algo.advent2018.day13.MineCartMadness.RoadOrientation.RoadOrientation
 import com.lukgru.algo.advent2018.utils.InputLoader
 
+import scala.annotation.tailrec
+
 object MineCartMadness {
 
   object Direction extends Enumeration {
@@ -125,6 +127,41 @@ object MineCartMadness {
       .find { case (_, carts) => carts.length > 1 }
       .map { case (pos, _) => pos }
 
+  def eliminateCollisions(allCarts: List[Cart]): List[Cart] = {
+    allCarts.groupBy(_.position)
+      .filterNot { case (_, cartsWithSamePos) => cartsWithSamePos.length > 1}
+      .map { case (pos, carts) => (pos, carts.head)}
+      .values
+      .toList
+  }
+
+  def sortByPosition(carts: List[Cart]): List[Cart] = carts.sortBy(c => (c.position.y, c.position.x))
+
+  def findLastCartStanding(carts: List[Cart], roads: Map[Position, Road]): Cart = {
+    val moveF = move(roads) _
+    @tailrec
+    def find(toMove: List[Cart], moved: List[Cart]): Cart = {
+      if ((toMove ++ moved).length == 1) {
+        if (toMove.length == 1) moveF(toMove.head)
+        else moved.head
+      }
+      else if (toMove.isEmpty) {
+        find(sortByPosition(moved), List.empty)
+      }
+      else {
+        val afterFirstIsMoved = toMove.updated(0, moveF(toMove.head))
+        val withoutCollisions = eliminateCollisions(afterFirstIsMoved)
+        if (withoutCollisions.head == afterFirstIsMoved.head) {
+          find(withoutCollisions.tail, moved :+ withoutCollisions.head)
+        }
+        else {
+          find(withoutCollisions, moved)
+        }
+      }
+    }
+    find(carts, List.empty)
+  }
+
   def solvePart1(lines: List[String]): (Int, Int) = {
     var carts = parseCarts(lines)
     val road = parseRoads(lines)
@@ -138,10 +175,20 @@ object MineCartMadness {
     (collisionPosition.x, collisionPosition.y)
   }
 
+  def solvePart2(lines: List[String]): (Int, Int) = {
+    val carts = parseCarts(lines)
+    val roads = parseRoads(lines)
+    val lastCartStanding = findLastCartStanding(carts, roads)
+    (lastCartStanding.position.x, lastCartStanding.position.y)
+  }
+
   def main(args: Array[String]): Unit = {
     val input = InputLoader.loadLines("day13-input")
     val solution1 = solvePart1(input)
     println(solution1)
+
+    val solution2 = solvePart2(input)
+    println(solution2)
   }
 
 }

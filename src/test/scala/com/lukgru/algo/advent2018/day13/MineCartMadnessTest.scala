@@ -1,7 +1,7 @@
 package com.lukgru.algo.advent2018.day13
 
-import MineCartMadness.RoadOrientation.RoadOrientation
-import MineCartMadness._
+import com.lukgru.algo.advent2018.day13.MineCartMadness.RoadOrientation.RoadOrientation
+import com.lukgru.algo.advent2018.day13.MineCartMadness._
 import com.lukgru.algo.advent2018.utils.InputLoader
 import org.scalatest.FunSuite
 
@@ -130,7 +130,7 @@ class MineCartMadnessTest extends FunSuite {
 
   test("should go through simple line") {
     //given
-    val cart = Cart(Position(5,3), Direction.v)
+    val cart = Cart(Position(5, 3), Direction.v)
     val road = Map(
       roadEntry(5, 3, RoadOrientation.|),
       roadEntry(5, 4, RoadOrientation.\),
@@ -157,6 +157,36 @@ class MineCartMadnessTest extends FunSuite {
 
     //then
     assert(solution == (103, 85))
+  }
+
+//  test("should collide carts when just in front one another") {
+//    //given
+//    val input = List("><")
+//
+//    //when
+//    val collisionPosition = solvePart1(input)
+//
+//    //then
+//    assert(collisionPosition == (1, 0))
+//  }
+
+  test("should find last cart standing for simple example") {
+    //given
+    val input = List(
+      "/>-<\\",
+      "|   |",
+      "| /<+-\\",
+      "| | | v",
+      "\\>+</ |",
+      "  |   ^",
+      "  \\<->/"
+    )
+
+    //when
+    val lastCartStandingPosition = solvePart2(input)
+
+    //then
+    assert(lastCartStandingPosition == (6, 4))
   }
 
   def roadEntry(x: Int, y: Int, orientation: RoadOrientation): (Position, Road) = {
