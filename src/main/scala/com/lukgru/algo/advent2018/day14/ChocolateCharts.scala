@@ -29,29 +29,40 @@ object ChocolateCharts {
   def getCurrentRecipes(scoreboard: Scoreboard, elves: Vector[Elf]): (Int, Int) = (scoreboard(elves.head.position), scoreboard(elves(1).position))
 
   @tailrec
-  def evolveScoreboard(scoreboard: Scoreboard, elves: Vector[Elf], targetLength: Int): Scoreboard = {
-    if (scoreboard.length >= targetLength) scoreboard
+  def evolveScoreboardUntil(scoreboard: Scoreboard, elves: Vector[Elf], stopCondition: Scoreboard => Boolean): Scoreboard = {
+    if (stopCondition(scoreboard)) scoreboard
     else {
       val (r1, r2) = getCurrentRecipes(scoreboard, elves)
       val newRecipes = combineRecipes(r1, r2)
       val newScoreboard = scoreboard ++ newRecipes
       val newElves = elves.map(e => moveElf(e, newScoreboard))
-      evolveScoreboard(newScoreboard, newElves, targetLength)
+      evolveScoreboardUntil(newScoreboard, newElves, stopCondition)
     }
   }
 
   def findBestNAfterM(n: Int, initElves: Vector[Elf], initScoreboard: Scoreboard)(m: Int): Vector[Int] = {
     val getBestNAfterM = getNAfterMRecipes(n)(m) _
-    val targetScoreboard = evolveScoreboard(initScoreboard, initElves, n + m)
+    val targetScoreboard = evolveScoreboardUntil(initScoreboard, initElves, scoreboard => scoreboard.length >= n + m)
     getBestNAfterM(targetScoreboard)
+  }
+
+  def findAfterHowManySequenceAppears(initElves: Vector[Elf], initScoreboard: Scoreboard)(lookingFor: Vector[Int]): Int = {
+    def stopCondition(scoreboard: Scoreboard): Boolean = scoreboard.takeRight(lookingFor.length + 2).containsSlice(lookingFor)
+    val targetScoreboard = evolveScoreboardUntil(initScoreboard, initElves, stopCondition)
+    targetScoreboard.mkString.indexOf(lookingFor.mkString)
   }
 
   def formatSolution(s: Vector[Int]): String = s.mkString
 
   def main(args: Array[String]): Unit = {
-    val input = 47801
-    val solution1 = findBestNAfterM(10, Vector(Elf(0), Elf(1)), Vector(3, 7))(input)
+    val initElves = Vector(Elf(0), Elf(1))
+    val initScoreboard = Vector(3, 7)
+
+    val solution1 = findBestNAfterM(10, initElves, initScoreboard)(47801)
     println(formatSolution(solution1))
+
+    val solution2 = findAfterHowManySequenceAppears(initElves, initScoreboard)(Vector(0,4,7,8,0,1))
+    println(solution2)
   }
 
 }

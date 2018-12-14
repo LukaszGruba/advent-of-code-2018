@@ -5,6 +5,9 @@ import org.scalatest.FunSuite
 
 class ChocolateChartsTest extends FunSuite {
 
+  val initScoreBoard: Vector[Int] = Vector(3, 7)
+  val initElves: Vector[Elf] = Vector(Elf(0), Elf(1))
+
   test("should return 10 recipes after 9") {
     //given
     val scoreboard = Vector(3, 7, 1, 0, 1, 0, 1, 2, 4, 5, 1, 5, 8, 9, 1, 6, 7, 7, 9, 2)
@@ -42,10 +45,6 @@ class ChocolateChartsTest extends FunSuite {
 
 
   test("should find 10 best after 5") {
-    //given
-    val initScoreBoard = Vector(3, 7)
-    val initElves = Vector(Elf(0), Elf(1))
-
     //when
     val best = ChocolateCharts.findBestNAfterM(10, initElves, initScoreBoard)(5)
 
@@ -54,10 +53,6 @@ class ChocolateChartsTest extends FunSuite {
   }
 
   test("should find 10 best after 18") {
-    //given
-    val initScoreBoard = Vector(3, 7)
-    val initElves = Vector(Elf(0), Elf(1))
-
     //when
     val best = ChocolateCharts.findBestNAfterM(10, initElves, initScoreBoard)(18)
 
@@ -66,10 +61,6 @@ class ChocolateChartsTest extends FunSuite {
   }
 
   test("should find 10 best after 2018") {
-    //given
-    val initScoreBoard = Vector(3, 7)
-    val initElves = Vector(Elf(0), Elf(1))
-
     //when
     val best = ChocolateCharts.findBestNAfterM(10, initElves, initScoreBoard)(2018)
 
@@ -78,14 +69,66 @@ class ChocolateChartsTest extends FunSuite {
   }
 
   test("should solve part 1") {
-    //given
-    val initScoreBoard = Vector(3, 7)
-    val initElves = Vector(Elf(0), Elf(1))
-
     //when
     val best = ChocolateCharts.findBestNAfterM(10, initElves, initScoreBoard)(47801)
 
     //then
     assert(best == Vector(1, 3, 4, 2, 3, 1, 6, 4, 1, 0))
   }
+
+  test("should find 51589 after 9 recipes") {
+    //given
+    val lookingFor = Vector(5,1,5,8,9)
+
+    //when
+    val amountOnTheLeft = ChocolateCharts.findAfterHowManySequenceAppears(initElves, initScoreBoard)(lookingFor)
+
+    //then
+    assert(amountOnTheLeft == 9)
+  }
+
+  test("should find 01245 after 5 recipes") {
+    //given
+    val lookingFor = Vector(0,1,2,4,5)
+
+    //when
+    val amountOnTheLeft = ChocolateCharts.findAfterHowManySequenceAppears(initElves, initScoreBoard)(lookingFor)
+
+    //then
+    assert(amountOnTheLeft == 5)
+  }
+
+  test("should find 92510 after 18 recipes") {
+    //given
+    val lookingFor = Vector(9,2,5,1,0)
+
+    //when
+    val amountOnTheLeft = ChocolateCharts.findAfterHowManySequenceAppears(initElves, initScoreBoard)(lookingFor)
+
+    //then
+    assert(amountOnTheLeft == 18)
+  }
+
+  test("should find 59414 after 2018 recipes") {
+    //given
+    val lookingFor = Vector(5,9,4,1,4)
+
+    //when
+    val amountOnTheLeft = ChocolateCharts.findAfterHowManySequenceAppears(initElves, initScoreBoard)(lookingFor)
+
+    //then
+    assert(amountOnTheLeft == 2018)
+  }
+
+  test("should solve part 2") {
+    //given
+    val lookingFor = Vector(0,4,7,8,0,1)
+
+    //when
+    val amountOnTheLeft = ChocolateCharts.findAfterHowManySequenceAppears(initElves, initScoreBoard)(lookingFor)
+
+    //then
+    assert(amountOnTheLeft == 20235230)
+  }
+
 }
