@@ -129,37 +129,108 @@ object MineCartMadness {
 
   def eliminateCollisions(allCarts: List[Cart]): List[Cart] = {
     allCarts.groupBy(_.position)
-      .filterNot { case (_, cartsWithSamePos) => cartsWithSamePos.length > 1}
-      .map { case (pos, carts) => (pos, carts.head)}
+      .filterNot { case (_, cartsWithSamePos) => cartsWithSamePos.length > 1 }
+      .map { case (pos, carts) => (pos, carts.head) }
       .values
       .toList
   }
 
   def sortByPosition(carts: List[Cart]): List[Cart] = carts.sortBy(c => (c.position.y, c.position.x))
 
+  object counter {
+    private var i = 0
+
+    def ++(): Unit = i += 1
+
+    def value(): Int = i
+  }
+
+  //  def findLastCartStanding(carts: List[Cart], roads: Map[Position, Road]): Cart = {
+  //    val moveF = move(roads) _
+  //    @tailrec
+  //    def find(toMove: List[Cart], moved: List[Cart]): Cart = {
+  //      printState(toMove ++ moved, roads)
+  //      counter.++()
+  //      if ((toMove ++ moved).length == 1) {
+  //        if (toMove.length == 1) toMove.head//moveF(toMove.head)
+  //        else moved.head
+  //      }
+  //      else if (toMove.isEmpty) {
+  //        find(sortByPosition(eliminateCollisions(moved)), List.empty)
+  //      }
+  //      else {
+  //        val afterFirstIsMoved = toMove.updated(0, moveF(toMove.head))
+  //        val withoutCollisions = sortByPosition(eliminateCollisions(afterFirstIsMoved))
+  //        if (withoutCollisions.head == afterFirstIsMoved.head) {
+  //          find(withoutCollisions.tail, moved :+ withoutCollisions.head)
+  //        }
+  //        else {
+  //          find(withoutCollisions, moved)
+  //        }
+  //      }
+  //    }
+  //    find(carts, List.empty)
+  //  }
+
+  def findCollisions(carts: List[Cart]): List[Position] =
+    carts.map(_.position)
+      .groupBy(identity)
+      .values
+      .filter(_.length > 1)
+      .map(_.head)
+      .toList
+
+  @tailrec
   def findLastCartStanding(carts: List[Cart], roads: Map[Position, Road]): Cart = {
-    val moveF = move(roads) _
-    @tailrec
-    def find(toMove: List[Cart], moved: List[Cart]): Cart = {
-      if ((toMove ++ moved).length == 1) {
-        if (toMove.length == 1) moveF(toMove.head)
-        else moved.head
+    if (carts.length == 1) carts.head
+    else {
+      val moveF = move(roads) _
+      var toMove = sortByPosition(carts)
+      var moved = List.empty[Cart]
+      while (toMove.nonEmpty) {
+        val c = toMove.head
+        toMove = toMove.tail
+        val movedCart = moveF(c)
+        moved = moved :+ movedCart
+        val collisions = findCollisions(moved ++ toMove)
+        moved = moved.filterNot(c => collisions.contains(c.position))
+        toMove = sortByPosition(toMove.filterNot(c => collisions.contains(c.position)))
       }
-      else if (toMove.isEmpty) {
-        find(sortByPosition(moved), List.empty)
-      }
-      else {
-        val afterFirstIsMoved = toMove.updated(0, moveF(toMove.head))
-        val withoutCollisions = eliminateCollisions(afterFirstIsMoved)
-        if (withoutCollisions.head == afterFirstIsMoved.head) {
-          find(withoutCollisions.tail, moved :+ withoutCollisions.head)
-        }
-        else {
-          find(withoutCollisions, moved)
-        }
-      }
+      val sortedRemaining = sortByPosition(moved)
+      findLastCartStanding(sortedRemaining, roads)
     }
-    find(carts, List.empty)
+  }
+
+  def printState(carts: List[Cart], roads: Map[Position, Road]): Unit = {
+    def formatDirection(dir: Direction): String = dir match {
+      case Direction.< => "<"
+      case Direction.^ => "^"
+      case Direction.> => ">"
+      case Direction.v => "v"
+    }
+
+    def formatOrientation(or: RoadOrientation): String = or match {
+      case RoadOrientation./ => "/"
+      case RoadOrientation.| => "|"
+      case RoadOrientation.- => "-"
+      case RoadOrientation.\ => "\\"
+      case RoadOrientation.+ => "+"
+    }
+
+    val maxX = roads.keys.maxBy(p => p.x).x
+    val maxY = roads.keys.maxBy(p => p.y).y
+    val sb = new StringBuilder()
+    for (y <- 0 to maxY) {
+      for (x <- 0 to maxX) {
+        val road = roads.get(Position(x, y))
+          .map(r => formatOrientation(r.orientation))
+          .getOrElse(" ")
+        val sign = carts.find(c => c.position == Position(x, y)).map(c => formatDirection(c.direction)).getOrElse(road)
+        sb.append(sign)
+      }
+      sb.append('\n')
+    }
+    println(sb.mkString)
   }
 
   def solvePart1(lines: List[String]): (Int, Int) = {
@@ -178,7 +249,9 @@ object MineCartMadness {
   def solvePart2(lines: List[String]): (Int, Int) = {
     val carts = parseCarts(lines)
     val roads = parseRoads(lines)
-    val lastCartStanding = findLastCartStanding(carts, roads)
+    val lastCartStanding = findLastCartStanding(sortByPosition(carts), roads)
+    printState(List(lastCartStanding), roads)
+    println(counter.value)
     (lastCartStanding.position.x, lastCartStanding.position.y)
   }
 

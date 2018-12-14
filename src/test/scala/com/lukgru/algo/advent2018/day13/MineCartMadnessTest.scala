@@ -189,6 +189,37 @@ class MineCartMadnessTest extends FunSuite {
     assert(lastCartStandingPosition == (6, 4))
   }
 
+  test("should sort by position") {
+    def c(x: Int, y: Int): Cart = Cart(Position(x, y), Direction.<)
+    //given
+    val unordered = List(
+      c(4,3),
+      c(1,2),
+      c(0,3),
+      c(2,2),
+      c(0,1),
+      c(0,0),
+      c(1,1),
+      c(1,0),
+    )
+
+    //when
+    val ordered = sortByPosition(unordered)
+
+    //then
+    val expected = List(
+      c(0,0),
+      c(1,0),
+      c(0,1),
+      c(1,1),
+      c(1,2),
+      c(2,2),
+      c(0,3),
+      c(4,3)
+    )
+    assert(ordered == expected)
+  }
+
   def roadEntry(x: Int, y: Int, orientation: RoadOrientation): (Position, Road) = {
     val p = Position(x, y)
     p -> Road(p, orientation)
