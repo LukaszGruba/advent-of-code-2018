@@ -138,23 +138,27 @@ object MineCartMadness {
       .toList
 
   @tailrec
-  def findLastCartStanding(carts: List[Cart], roads: Map[Position, Road]): Cart = {
+  def moveAndCollide(moveF: Cart => Cart)(toMove: List[Cart], moved: List[Cart] = List.empty): List[Cart] =
+    toMove match {
+      case Nil => sortByPosition(moved)
+      case _ =>
+        val cartToBeMoved = toMove.head
+        val restOfCarts = toMove.tail
+        val cartAfterMove = moveF(cartToBeMoved)
+        val newMoved = moved :+ cartAfterMove
+        val collisions = findCollisions(newMoved ++ restOfCarts)
+        val remainingAlreadyMoved = newMoved.filterNot(c => collisions.contains(c.position))
+        val remainingToBeMoved = restOfCarts.filterNot(c => collisions.contains(c.position))
+        moveAndCollide(moveF)(remainingToBeMoved, remainingAlreadyMoved)
+    }
+
+  @tailrec
+  def findLastCartStanding(moveFunction: Cart => Cart)(carts: List[Cart]): Cart = {
     if (carts.length == 1) carts.head
     else {
-      val moveF = move(roads) _
-      var toMove = sortByPosition(carts)
-      var moved = List.empty[Cart]
-      while (toMove.nonEmpty) {
-        val c = toMove.head
-        toMove = toMove.tail
-        val movedCart = moveF(c)
-        moved = moved :+ movedCart
-        val collisions = findCollisions(moved ++ toMove)
-        moved = moved.filterNot(c => collisions.contains(c.position))
-        toMove = sortByPosition(toMove.filterNot(c => collisions.contains(c.position)))
-      }
-      val sortedRemaining = sortByPosition(moved)
-      findLastCartStanding(sortedRemaining, roads)
+      val toMove = sortByPosition(carts)
+      val remainingCartsMovedOneStep = moveAndCollide(moveFunction)(toMove)
+      findLastCartStanding(moveFunction)(remainingCartsMovedOneStep)
     }
   }
 
@@ -205,7 +209,8 @@ object MineCartMadness {
   def findLastCartStandingPosition(lines: List[String]): (Int, Int) = {
     val carts = parseCarts(lines)
     val roads = parseRoads(lines)
-    val lastCartStanding = findLastCartStanding(sortByPosition(carts), roads)
+    val moveF = move(roads) _
+    val lastCartStanding = findLastCartStanding(moveF)(sortByPosition(carts))
     (lastCartStanding.position.x, lastCartStanding.position.y)
   }
 
