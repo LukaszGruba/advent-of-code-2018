@@ -159,17 +159,6 @@ class MineCartMadnessTest extends FunSuite {
     assert(solution == (103, 85))
   }
 
-//  test("should collide carts when just in front one another") {
-//    //given
-//    val input = List("><")
-//
-//    //when
-//    val collisionPosition = solvePart1(input)
-//
-//    //then
-//    assert(collisionPosition == (1, 0))
-//  }
-
   test("should find last cart standing for simple example") {
     //given
     val input = List(
@@ -218,6 +207,17 @@ class MineCartMadnessTest extends FunSuite {
       c(4,3)
     )
     assert(ordered == expected)
+  }
+
+  test("should solve part 2") {
+    //given
+    val input = InputLoader.loadLines("day13-input")
+
+    //when
+    val solution = solvePart2(input)
+
+    //then
+    assert(solution == (88,64))
   }
 
   def roadEntry(x: Int, y: Int, orientation: RoadOrientation): (Position, Road) = {
