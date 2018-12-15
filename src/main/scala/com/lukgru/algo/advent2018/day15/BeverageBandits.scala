@@ -36,11 +36,22 @@ object BeverageBandits {
       }
   }
 
-  def sortByPosition(creatures: List[Creature]): List[Creature] = ???
+  def sortByPosition(creatures: List[Creature]): List[Creature] =
+    creatures.sortBy { case Creature(Position(x, y), _, _, _) => (y, x) }
 
-  def getEnemies(attackerType: CreatureType, allCreatures: List[Creature]): List[Creature] = allCreatures.filterNot(_.cType == attackerType)
+  def findEnemies(attackerType: CreatureType, allCreatures: List[Creature]): List[Creature] =
+    allCreatures.filterNot(_.cType == attackerType)
 
-  def findPathToNearestEnemy(creature: Creature, allCreatures: List[Creature]): (Position, List[Position]) = ???
+  def findShortestPath(map: Set[Position])(start: Position, end: Position): List[Position] = ???
+
+  def findPathToNearestEnemy(map: Set[Position])(creature: Creature, allCreatures: List[Creature]): (Position, List[Position]) = {
+    val enemies = findEnemies(creature.cType, allCreatures)
+    val allowedTerrain = map.filterNot(p => allCreatures.map(_.pos).exists(p.==))
+
+    val paths = enemies.map(enemy => enemy -> findShortestPath(allowedTerrain)(creature.pos, enemy.pos))
+    val (nearestEnemy, shortestPath) = paths.minBy { case (enemy, path) => (path.length, enemy.pos.y, enemy.pos.x) }
+    (nearestEnemy.pos, shortestPath)
+  }
 
   def moveStep(c: Creature): Creature = ???
 
