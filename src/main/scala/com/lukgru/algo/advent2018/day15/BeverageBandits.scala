@@ -42,10 +42,10 @@ object BeverageBandits {
   def findEnemies(attackerType: CreatureType, allCreatures: List[Creature]): List[Creature] =
     allCreatures.filterNot(_.cType == attackerType)
 
-  def findShortestPath(map: Set[Position])(start: Position, end: Position): Option[List[Position]] = {
-    def nearestPositions(pos: Position): List[Position] =
-      List(Position(pos.x, pos.y - 1), Position(pos.x - 1, pos.y), Position(pos.x + 1, pos.y), Position(pos.x, pos.y + 1))
+  def nearestPositions(pos: Position): List[Position] =
+    List(Position(pos.x, pos.y - 1), Position(pos.x - 1, pos.y), Position(pos.x + 1, pos.y), Position(pos.x, pos.y + 1))
 
+  def findShortestPath(map: Set[Position])(start: Position, end: Position): Option[List[Position]] = {
     def possibleNextSteps(pos: Position, available: Set[Position]): List[Position] =
       nearestPositions(pos).filter(available.contains)
 
@@ -79,7 +79,16 @@ object BeverageBandits {
 
   def moveStep(c: Creature): Creature = ???
 
-  def attackNearestEnemy(attacker: Creature, allCreatures: List[Creature]): List[Creature] = ???
+  def attackNearestEnemy(attacker: Creature, allCreatures: List[Creature]): List[Creature] = {
+    val nearestEnemy = findEnemies(attacker.cType, allCreatures).find(c => nearestPositions(attacker.pos).contains(c.pos))
+    nearestEnemy match {
+      case None => allCreatures
+      case Some(enemy) => allCreatures.map { c =>
+        if (c == enemy) c.copy(hp = c.hp - attacker.attackPower)
+        else c
+      }
+    }
+  }
 
   def runSimulation(input: List[String]): (Int, Int, CreatureType) = ???
 

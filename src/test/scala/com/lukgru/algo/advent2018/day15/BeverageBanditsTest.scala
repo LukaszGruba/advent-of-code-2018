@@ -156,4 +156,29 @@ class BeverageBanditsTest extends FunSuite {
     assert(nearestEnemyPosition == p(1, 5))
     assert(shortestPath == List(p(1, 1), p(2, 1), p(3, 1), p(3, 2), p(3, 3), p(3, 4), p(2, 4), p(2, 5), p(1, 5)))
   }
+
+  test("should attack nearest enemy") {
+    //given
+    val creature = Creature(p(10, 10), CreatureType.Elf)
+    val allCreatures = List(
+      creature,
+      Creature(p(9, 10), CreatureType.Elf),
+      Creature(p(11, 10), CreatureType.Goblin),
+      Creature(p(10, 9), CreatureType.Elf),
+      Creature(p(10, 11), CreatureType.Goblin)
+    )
+
+    //when
+    val newAllCreatures = BeverageBandits.attackNearestEnemy(creature, allCreatures)
+
+    //then
+    assert(newAllCreatures == List(
+      creature,
+      Creature(p(9, 10), CreatureType.Elf),
+      Creature(p(11, 10), CreatureType.Goblin, hp = 197),
+      Creature(p(10, 9), CreatureType.Elf),
+      Creature(p(10, 11), CreatureType.Goblin)
+    )
+    )
+  }
 }
