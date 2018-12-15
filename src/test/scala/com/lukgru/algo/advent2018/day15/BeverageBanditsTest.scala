@@ -130,7 +130,8 @@ class BeverageBanditsTest extends FunSuite {
     val shortestPath = BeverageBandits.findShortestPath(map)(start, end)
 
     //then
-    assert(shortestPath == List(p(2, 1), p(3, 1), p(3, 2), p(3, 3), p(3, 4), p(2, 4), p(2, 5), p(1, 5)))
+    assert(shortestPath.isDefined)
+    assert(shortestPath.get == List(p(1, 1), p(2, 1), p(3, 1), p(3, 2), p(3, 3), p(3, 4), p(2, 4), p(2, 5), p(1, 5)))
   }
 
   test("should locate nearest enemy and the shortest path to him") {
@@ -153,6 +154,6 @@ class BeverageBanditsTest extends FunSuite {
 
     //then
     assert(nearestEnemyPosition == p(1, 5))
-    assert(shortestPath == List(p(2, 1), p(3, 1), p(3, 2), p(3, 3), p(3, 4), p(2, 4), p(2, 5), p(1, 5)))
+    assert(shortestPath == List(p(1, 1), p(2, 1), p(3, 1), p(3, 2), p(3, 3), p(3, 4), p(2, 4), p(2, 5), p(1, 5)))
   }
 }

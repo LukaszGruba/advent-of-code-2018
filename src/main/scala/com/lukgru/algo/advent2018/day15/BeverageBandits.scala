@@ -42,13 +42,37 @@ object BeverageBandits {
   def findEnemies(attackerType: CreatureType, allCreatures: List[Creature]): List[Creature] =
     allCreatures.filterNot(_.cType == attackerType)
 
-  def findShortestPath(map: Set[Position])(start: Position, end: Position): List[Position] = ???
+  def findShortestPath(map: Set[Position])(start: Position, end: Position): Option[List[Position]] = {
+    def nearestPositions(pos: Position): List[Position] =
+      List(Position(pos.x, pos.y - 1), Position(pos.x - 1, pos.y), Position(pos.x + 1, pos.y), Position(pos.x, pos.y + 1))
+
+    def possibleNextSteps(pos: Position, available: Set[Position]): List[Position] =
+      nearestPositions(pos).filter(available.contains)
+
+    def bfs(current: Position, target: Position, available: Set[Position], path: List[Position] = List.empty): Option[List[Position]] = {
+      if (nearestPositions(current).contains(target)) Some(path :+ current :+ target)
+      else if (available.isEmpty) None
+      else {
+        val possiblePaths = possibleNextSteps(current, available).flatMap { pos =>
+          bfs(pos, target, available.filterNot(current.==))
+        }
+        possiblePaths match {
+          case Nil => None
+          case paths => Some(current +: paths.minBy(_.length))
+        }
+      }
+    }
+
+    bfs(start, end, map)
+  }
 
   def findPathToNearestEnemy(map: Set[Position])(creature: Creature, allCreatures: List[Creature]): (Position, List[Position]) = {
     val enemies = findEnemies(creature.cType, allCreatures)
     val allowedTerrain = map.filterNot(p => allCreatures.map(_.pos).exists(p.==))
 
     val paths = enemies.map(enemy => enemy -> findShortestPath(allowedTerrain)(creature.pos, enemy.pos))
+      .filter { case (enemy, pathOpt) => pathOpt.isDefined }
+      .map { case (enemy, pathOpt) => (enemy, pathOpt.get) }
     val (nearestEnemy, shortestPath) = paths.minBy { case (enemy, path) => (path.length, enemy.pos.y, enemy.pos.x) }
     (nearestEnemy.pos, shortestPath)
   }
