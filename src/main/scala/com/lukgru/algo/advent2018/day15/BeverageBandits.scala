@@ -86,17 +86,6 @@ object BeverageBandits {
     else creature.copy(pos = path(1))
   }
 
-  def takeTurn(map: Set[Position])(creature: Creature, allCreatures: List[Creature]): (Creature, List[Creature]) = {
-    findPathToNearestEnemy(map)(creature, allCreatures) match {
-      case None => (creature, allCreatures)
-      case Some((_, path)) =>
-        val creatureAfterMove = move(creature, path)
-        val allOtherCreatures = allCreatures.filterNot(creature.==)
-        val creaturesAfterAttack = attackNearestEnemy(creatureAfterMove, allOtherCreatures)
-        (creatureAfterMove, creaturesAfterAttack :+ creatureAfterMove)
-    }
-  }
-
   def attackNearestEnemy(attacker: Creature, allCreatures: List[Creature]): List[Creature] = {
     val nearestEnemy = findEnemies(attacker.cType, allCreatures).find(c => nearestPositions(attacker.pos).contains(c.pos))
     nearestEnemy match {
@@ -105,6 +94,17 @@ object BeverageBandits {
         if (c == enemy) c.copy(hp = c.hp - attacker.attackPower)
         else c
       }.filterNot(_.hp <= 0)
+    }
+  }
+
+  def takeTurn(map: Set[Position])(creature: Creature, allCreatures: List[Creature]): (Creature, List[Creature]) = {
+    findPathToNearestEnemy(map)(creature, allCreatures) match {
+      case None => (creature, allCreatures)
+      case Some((_, path)) =>
+        val creatureAfterMove = move(creature, path)
+        val allOtherCreatures = allCreatures.filterNot(creature.==)
+        val creaturesAfterAttack = attackNearestEnemy(creatureAfterMove, allOtherCreatures)
+        (creatureAfterMove, creaturesAfterAttack :+ creatureAfterMove)
     }
   }
 
