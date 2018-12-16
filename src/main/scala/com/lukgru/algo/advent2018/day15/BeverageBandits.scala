@@ -79,7 +79,7 @@ object BeverageBandits {
       var current = start
       while (current != end && remaining.nonEmpty) {
         current = remaining.dequeue()
-        possibleNextSteps(current, notVisited).foreach{
+        possibleNextSteps(current, notVisited).foreach {
           possibleStep =>
             if (!remaining.contains(possibleStep)) {
               remaining += possibleStep
@@ -108,7 +108,7 @@ object BeverageBandits {
       else s.head #:: bfs2(s.tail.append(f(s.head)), f)
     }
 
-//    bfs(start, end, map)
+    //    bfs(start, end, map)
     bfsImper(start, end)
   }
 
@@ -147,6 +147,9 @@ object BeverageBandits {
   }
 
   def takeTurn(map: Set[Position])(creature: Creature, allCreatures: List[Creature]): (Creature, List[Creature]) = {
+    if (isWarOver(allCreatures)) {
+      println("WAR IS OVER!")
+    }
     findPathToNearestEnemy(map)(creature, allCreatures) match {
       case None => (creature, allCreatures)
       case Some((_, path)) =>
@@ -160,11 +163,10 @@ object BeverageBandits {
   def playRound(map: Set[Position])(allCreatures: List[Creature]): List[Creature] = {
     val sorted = sortByPosition(allCreatures)
     val afterRound = sorted.foldLeft(sorted) {
-      case (creatures, currentCreature) => {
-        creatures.find(c => c.pos == currentCreature.pos)
-            .map(takeTurn(map)(_, creatures)._2)
-            .getOrElse(creatures)
-      }
+      case (creatures, currentCreature) =>
+        creatures.find(_.pos == currentCreature.pos)
+          .map(takeTurn(map)(_, creatures)._2)
+          .getOrElse(creatures)
     }
     sortByPosition(afterRound)
   }
@@ -174,13 +176,16 @@ object BeverageBandits {
   def playWar(map: Set[Position])(creatures: List[Creature]): (Int, Int, CreatureType) = {
     var currentCreatures = creatures
     var roundNo = 0
+    println("INIT STATE:")
     printState(map)(currentCreatures)
     while (!isWarOver(currentCreatures)) {
       currentCreatures = playRound(map)(currentCreatures)
+      roundNo += 1
       println(roundNo)
       printState(map)(currentCreatures)
-      roundNo += 1
     }
+    println("FINAL STATE:")
+    printState(map)(currentCreatures)
     val sumOfHp = currentCreatures.map(_.hp).sum
     val winnerRace = currentCreatures.head.cType
     (roundNo - 1, sumOfHp, winnerRace)
@@ -206,11 +211,16 @@ object BeverageBandits {
           else '#'
         sb.append(c)
       }
+      sb.append("   ")
+      creatures.filter(_.pos.y == y).sortBy(_.pos.x).foreach(sb.append(_).append('\t'))
       sb.append('\n')
     }
     println(sb.mkString)
   }
 
+  //75 * 2659 = 199425 -> TOO LOW
+  //            200500 -> NOT RIGHT
+  //76 * 2659 = 202084 -> TOO HIGH
   def main(args: Array[String]): Unit = {
     val input = InputLoader.loadLines("day15-input")
     val (numberOfFullRounds, totalHPLeft, winningArmy) = runSimulation(input)
