@@ -329,103 +329,125 @@ class BeverageBanditsTest extends FunSuite {
     val all4 = BeverageBandits.playRound(map)(all3)
     val all5 = BeverageBandits.playRound(map)(all4)
 
+    BeverageBandits.printState(map)(initAll)
+    BeverageBandits.printState(map)(all1)
+    BeverageBandits.printState(map)(all2)
+    BeverageBandits.printState(map)(all3)
+    BeverageBandits.printState(map)(all4)
+    BeverageBandits.printState(map)(all5)
+
     //then
-    val s1 = List(
-      "#########",
-      "#.E.E...#    6,6",
-      "#....EG.#    3,6",
-      "#..G....#    6",
-      "#G..G..G#    6,6,6",
-      "#.......#",
-      "#.......#",
-      "#.......#",
-      "#########"
-    )
+    //    #########
+    //    #.E.E...# 3 6
+    //    #.G..E..# 6  6
+    //    #....EG.#    33
+    //    #G..G..G#6  6  6
+    //    #.......#
+    //    #.......#
+    //    #.......#
+    //    #########
     assert(all1 == List(
-      Creature(p(2, 1), CreatureType.Elf, hp = 6),
+      Creature(p(2, 1), CreatureType.Elf, hp = 3),
       Creature(p(4, 1), CreatureType.Elf, hp = 6),
-      Creature(p(5, 2), CreatureType.Elf, hp = 3),
-      Creature(p(6, 2), CreatureType.Goblin, hp = 6),
-      Creature(p(3, 3), CreatureType.Goblin, hp = 6),
+      Creature(p(2, 2), CreatureType.Goblin, hp = 6),
+      Creature(p(5, 2), CreatureType.Elf, hp = 6),
+      Creature(p(5, 3), CreatureType.Elf, hp = 3),
+      Creature(p(6, 3), CreatureType.Goblin, hp = 3),
       Creature(p(1, 4), CreatureType.Goblin, hp = 6),
       Creature(p(4, 4), CreatureType.Goblin, hp = 6),
-      Creature(p(6, 5), CreatureType.Goblin, hp = 6)
+      Creature(p(7, 4), CreatureType.Goblin, hp = 6)
     ))
 
-    val s2 = List(
-      "#########",
-      "#..E.E..#    3,6",
-      "#..G..G.#    3,3",
-      "#G..G...#    6,6",
-      "#.....G.#    6",
-      "#.......#    ",
-      "#.......#",
-      "#.......#",
-      "#########"
-    )
+    //    #########
+    //    #..E....#  6
+    //    #.G...E.# 3   6
+    //    #G.....G#6     6
+    //    #...G...#   3
+    //    #.......#
+    //    #.......#
+    //    #.......#
+    //    #########
     assert(all2 == List(
-      Creature(p(3, 1), CreatureType.Elf, hp = 3),
-      Creature(p(5, 1), CreatureType.Elf, hp = 6),
-      Creature(p(3, 2), CreatureType.Goblin, hp = 3),
-      Creature(p(6, 2), CreatureType.Goblin, hp = 3),
+      Creature(p(3, 1), CreatureType.Elf, hp = 6),
+      Creature(p(2, 2), CreatureType.Goblin, hp = 3),
+      Creature(p(6, 2), CreatureType.Elf, hp = 6),
       Creature(p(1, 3), CreatureType.Goblin, hp = 6),
-      Creature(p(4, 3), CreatureType.Goblin, hp = 6),
-      Creature(p(6, 4), CreatureType.Goblin, hp = 6)
+      Creature(p(7, 3), CreatureType.Goblin, hp = 6),
+      Creature(p(4, 4), CreatureType.Goblin, hp = 3)
     ))
 
-    val s3 = List(
-      "#########",
-      "#..E..E.#    3,6",
-      "#G..G...#    6,6",
-      "#.....G.#    6",
-      "#.......#    ",
-      "#.......#    ",
-      "#.......#",
-      "#.......#",
-      "#########"
-    )
+    //    #########
+    //    #.E.....#  6
+    //    #G.....E#6     3
+    //    #...G..G#   3  3
+    //    #.......#
+    //    #.......#
+    //    #.......#
+    //    #.......#
+    //    #########
     assert(all3 == List(
-      Creature(p(3, 1), CreatureType.Elf, hp = 3),
-      Creature(p(6, 1), CreatureType.Elf, hp = 6),
+      Creature(p(2, 1), CreatureType.Elf, hp = 6),
       Creature(p(1, 2), CreatureType.Goblin, hp = 6),
-      Creature(p(4, 2), CreatureType.Goblin, hp = 6),
-      Creature(p(6, 3), CreatureType.Goblin, hp = 6)
+      Creature(p(7, 2), CreatureType.Elf, hp = 3),
+      Creature(p(4, 3), CreatureType.Goblin, hp = 3),
+      Creature(p(7, 3), CreatureType.Goblin, hp = 3)
     ))
 
-    val s4 = List(
-      "#########",
-      "#G......#    6",
-      "#...G.E.#    3,3",
-      "#.....G.#    3",
-      "#.......#    ",
-      "#.......#    ",
-      "#.......#",
-      "#.......#",
-      "#########"
-    )
+    //    #########
+    //    #E......#3
+    //    #G..G..E#3  3  3
+    //    #.......#
+    //    #.......#
+    //    #.......#
+    //    #.......#
+    //    #.......#
+    //    #########
     assert(all4 == List(
-      Creature(p(1, 1), CreatureType.Goblin, hp = 6),
+      Creature(p(1, 1), CreatureType.Elf, hp = 3),
+      Creature(p(1, 2), CreatureType.Goblin, hp = 3),
       Creature(p(4, 2), CreatureType.Goblin, hp = 3),
-      Creature(p(6, 2), CreatureType.Elf, hp = 3),
-      Creature(p(6, 3), CreatureType.Goblin, hp = 3)
+      Creature(p(7, 2), CreatureType.Elf, hp = 3)
     ))
 
-    val s5 = List(
+    //    #########
+    //    #E......#3
+    //    #.....E.#     3
+    //    #.......#
+    //    #.......#
+    //    #.......#
+    //    #.......#
+    //    #.......#
+    //    #########
+    assert(all5 == List(
+      Creature(p(1, 1), CreatureType.Elf, hp = 3),
+      Creature(p(6, 2), CreatureType.Elf, hp = 3)
+    ))
+  }
+
+  test("should play war for simple example") {
+    //given
+    val input = List(
       "#########",
-      "#.G.....#    6",
-      "#....G..#    3",
-      "#.....G.#    3",
-      "#.......#    ",
-      "#.......#    ",
+      "#E.E.E..#",
+      "#...G...#",
+      "#.G.E.G.#",
+      "#.......#",
+      "#G..G..G#",
       "#.......#",
       "#.......#",
       "#########"
     )
-    assert(all5 == List(
-      Creature(p(2, 1), CreatureType.Goblin, hp = 6),
-      Creature(p(5, 2), CreatureType.Goblin, hp = 3),
-      Creature(p(6, 3), CreatureType.Goblin, hp = 3)
-    ))
+    val map = BeverageBandits.parseCaveMap(input)
+    val initAll = BeverageBandits.parseCreatures(input).map(c => c.copy(hp = 6))
+
+    //when
+    val (numberOfRounds, totalHP, winner) = BeverageBandits.playWar(map)(initAll)
+
+    //then
+    assert(numberOfRounds == 5) //POSSIBLY 4?
+    assert(totalHP == 6)
+    assert(winner == CreatureType.Elf)
+
   }
 
   test("should run simulation for example1") {

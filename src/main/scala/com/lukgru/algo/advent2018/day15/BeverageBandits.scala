@@ -156,13 +156,14 @@ object BeverageBandits {
 
   def playRound(map: Set[Position])(allCreatures: List[Creature]): List[Creature] = {
     val sorted = sortByPosition(allCreatures)
-    sorted.foldLeft(sorted) {
+    val afterRound = sorted.foldLeft(sorted) {
       case (creatures, currentCreature) => {
         creatures.find(c => c.pos == currentCreature.pos)
             .map(takeTurn(map)(_, creatures)._2)
             .getOrElse(creatures)
       }
     }
+    sortByPosition(afterRound)
   }
 
   def isWarOver(allCreatures: List[Creature]): Boolean = allCreatures.groupBy(_.cType).size == 1
@@ -173,7 +174,6 @@ object BeverageBandits {
     printState(map)(currentCreatures)
     while (!isWarOver(currentCreatures)) {
       currentCreatures = playRound(map)(currentCreatures)
-      currentCreatures = sortByPosition(currentCreatures)
       println(roundNo)
       printState(map)(currentCreatures)
       roundNo += 1
