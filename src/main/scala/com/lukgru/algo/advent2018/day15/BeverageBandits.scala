@@ -133,8 +133,11 @@ object BeverageBandits {
   }
 
   def attackNearestEnemy(attacker: Creature, allCreatures: List[Creature]): List[Creature] = {
-    val nearestEnemy = findEnemies(attacker.cType, allCreatures).find(c => nearestPositions(attacker.pos).contains(c.pos))
-    nearestEnemy match {
+    val nearestWeakestEnemy = findEnemies(attacker.cType, allCreatures)
+      .filter(c => nearestPositions(attacker.pos).contains(c.pos))
+      .sortBy(enemy => (enemy.hp, enemy.pos.y, enemy.pos.x))
+      .headOption
+    nearestWeakestEnemy match {
       case None => allCreatures
       case Some(enemy) => allCreatures.map { c =>
         if (c == enemy) c.copy(hp = c.hp - attacker.attackPower)
@@ -180,7 +183,7 @@ object BeverageBandits {
     }
     val sumOfHp = currentCreatures.map(_.hp).sum
     val winnerRace = currentCreatures.head.cType
-    (roundNo, sumOfHp, winnerRace)
+    (roundNo - 1, sumOfHp, winnerRace)
   }
 
   def runSimulation(input: List[String]): (Int, Int, CreatureType) = {

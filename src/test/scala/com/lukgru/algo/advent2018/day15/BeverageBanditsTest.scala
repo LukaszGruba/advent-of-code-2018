@@ -444,7 +444,7 @@ class BeverageBanditsTest extends FunSuite {
     val (numberOfRounds, totalHP, winner) = BeverageBandits.playWar(map)(initAll)
 
     //then
-    assert(numberOfRounds == 5) //POSSIBLY 4?
+    assert(numberOfRounds == 4)
     assert(totalHP == 6)
     assert(winner == CreatureType.Elf)
 
@@ -557,5 +557,52 @@ class BeverageBanditsTest extends FunSuite {
     assert(winner == CreatureType.Goblin)
   }
 
+  test("should attack enemy with fewest HP first") {
+    //given
+    val attacker = Creature(Position(5,5), CreatureType.Elf)
+    val all = List(
+      Creature(Position(5,4), CreatureType.Goblin, hp = 10),
+      Creature(Position(4,5), CreatureType.Goblin, hp = 9),
+      attacker,
+      Creature(Position(5,6), CreatureType.Goblin, hp = 1),
+      Creature(Position(6,5), CreatureType.Goblin, hp = 2)
+    )
+
+    //when
+    val afterAttack = BeverageBandits.attackNearestEnemy(attacker, all)
+
+    //then
+    val expected = List(
+      Creature(Position(5,4), CreatureType.Goblin, hp = 10),
+      Creature(Position(4,5), CreatureType.Goblin, hp = 9),
+      attacker,
+      Creature(Position(6,5), CreatureType.Goblin, hp = 2)
+    )
+    assert(afterAttack == expected)
+  }
+
+  test("should attack enemy with fewest HP first, if same HP -> in reading order") {
+    //given
+    val attacker = Creature(Position(5,5), CreatureType.Elf)
+    val all = List(
+      Creature(Position(5,4), CreatureType.Goblin, hp = 10),
+      Creature(Position(4,5), CreatureType.Goblin, hp = 1),
+      attacker,
+      Creature(Position(5,6), CreatureType.Goblin, hp = 1),
+      Creature(Position(6,5), CreatureType.Goblin, hp = 2)
+    )
+
+    //when
+    val afterAttack = BeverageBandits.attackNearestEnemy(attacker, all)
+
+    //then
+    val expected = List(
+      Creature(Position(5,4), CreatureType.Goblin, hp = 10),
+      attacker,
+      Creature(Position(5,6), CreatureType.Goblin, hp = 1),
+      Creature(Position(6,5), CreatureType.Goblin, hp = 2)
+    )
+    assert(afterAttack == expected)
+  }
 
 }
