@@ -66,18 +66,36 @@ object BeverageBandits {
     bfs(start, end, map)
   }
 
-  def findPathToNearestEnemy(map: Set[Position])(creature: Creature, allCreatures: List[Creature]): (Position, List[Position]) = {
+  def findPathToNearestEnemy(map: Set[Position])(creature: Creature, allCreatures: List[Creature]): Option[(Position, List[Position])] = {
     val enemies = findEnemies(creature.cType, allCreatures)
     val allowedTerrain = map.filterNot(p => allCreatures.map(_.pos).exists(p.==))
 
     val paths = enemies.map(enemy => enemy -> findShortestPath(allowedTerrain)(creature.pos, enemy.pos))
       .filter { case (enemy, pathOpt) => pathOpt.isDefined }
       .map { case (enemy, pathOpt) => (enemy, pathOpt.get) }
-    val (nearestEnemy, shortestPath) = paths.minBy { case (enemy, path) => (path.length, enemy.pos.y, enemy.pos.x) }
-    (nearestEnemy.pos, shortestPath)
+    paths match {
+      case Nil => None
+      case _ =>
+        val (nearestEnemy, shortestPath) = paths.minBy { case (enemy, path) => (path.length, enemy.pos.y, enemy.pos.x) }
+        Some(nearestEnemy.pos, shortestPath)
+    }
   }
 
-  def moveStep(c: Creature): Creature = ???
+  def move(creature: Creature, path: List[Position]): Creature = {
+    if (path.length <= 2) creature
+    else creature.copy(pos = path(1))
+  }
+
+  def takeTurn(map: Set[Position])(creature: Creature, allCreatures: List[Creature]): (Creature, List[Creature]) = {
+    findPathToNearestEnemy(map)(creature, allCreatures) match {
+      case None => (creature, allCreatures)
+      case Some((_, path)) =>
+        val creatureAfterMove = move(creature, path)
+        val allOtherCreatures = allCreatures.filterNot(creature.==)
+        val creaturesAfterAttack = attackNearestEnemy(creatureAfterMove, allOtherCreatures)
+        (creatureAfterMove, creaturesAfterAttack :+ creatureAfterMove)
+    }
+  }
 
   def attackNearestEnemy(attacker: Creature, allCreatures: List[Creature]): List[Creature] = {
     val nearestEnemy = findEnemies(attacker.cType, allCreatures).find(c => nearestPositions(attacker.pos).contains(c.pos))
@@ -86,7 +104,7 @@ object BeverageBandits {
       case Some(enemy) => allCreatures.map { c =>
         if (c == enemy) c.copy(hp = c.hp - attacker.attackPower)
         else c
-      }
+      }.filterNot(_.hp <= 0)
     }
   }
 

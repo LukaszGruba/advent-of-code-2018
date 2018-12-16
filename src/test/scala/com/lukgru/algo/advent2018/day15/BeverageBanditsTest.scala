@@ -150,9 +150,11 @@ class BeverageBanditsTest extends FunSuite {
     val elf = Creature(p(1, 1), CreatureType.Elf)
 
     //when
-    val (nearestEnemyPosition, shortestPath) = BeverageBandits.findPathToNearestEnemy(map)(elf, allCreatures)
+    val enemyPathOpt = BeverageBandits.findPathToNearestEnemy(map)(elf, allCreatures)
 
     //then
+    assert(enemyPathOpt.isDefined)
+    val (nearestEnemyPosition, shortestPath) = enemyPathOpt.get
     assert(nearestEnemyPosition == p(1, 5))
     assert(shortestPath == List(p(1, 1), p(2, 1), p(3, 1), p(3, 2), p(3, 3), p(3, 4), p(2, 4), p(2, 5), p(1, 5)))
   }
@@ -178,7 +180,51 @@ class BeverageBanditsTest extends FunSuite {
       Creature(p(11, 10), CreatureType.Goblin, hp = 197),
       Creature(p(10, 9), CreatureType.Elf),
       Creature(p(10, 11), CreatureType.Goblin)
+    ))
+  }
+
+  test("should take several turns") {
+    //given
+    val input = List(
+      "#########",
+      "#E.E.E..#",
+      "#...G...#",
+      "#.G.E.G.#",
+      "#.......#",
+      "#G..G..G#",
+      "#.......#",
+      "#.......#",
+      "#########"
     )
-    )
+    val map = BeverageBandits.parseCaveMap(input)
+    val initAll = BeverageBandits.parseCreatures(input).map(c => c.copy(hp = 1))
+    val initC = initAll.head
+
+    //when
+    val (c1, all1) = BeverageBandits.takeTurn(map)(initC, initAll)
+    val (c2, all2) = BeverageBandits.takeTurn(map)(c1, all1)
+    val (c3, all3) = BeverageBandits.takeTurn(map)(c2, all2)
+    val (c4, all4) = BeverageBandits.takeTurn(map)(c3, all3)
+    val (c5, all5) = BeverageBandits.takeTurn(map)(c4, all4)
+    val (c6, all6) = BeverageBandits.takeTurn(map)(c5, all5)
+    val (c7, all7) = BeverageBandits.takeTurn(map)(c6, all6)
+    val (c8, all8) = BeverageBandits.takeTurn(map)(c7, all7)
+    val (c9, all9) = BeverageBandits.takeTurn(map)(c8, all8)
+
+    //then
+    assert(List(c1, c2, c3, c4, c5, c6, c7, c8, c9).map(_.pos)
+      == List(p(2, 1), p(2, 2), p(3, 2), p(4, 2), p(5, 2), p(6, 2), p(7, 2), p(7, 3), p(7, 4)))
+
+    assert(all1.contains(Creature(p(2, 3), CreatureType.Goblin, hp = 1)))
+    assert(!all2.contains(Creature(p(2, 3), CreatureType.Goblin, hp = 1)))
+
+    assert(all2.contains(Creature(p(4, 2), CreatureType.Goblin, hp = 1)))
+    assert(!all3.contains(Creature(p(4, 2), CreatureType.Goblin, hp = 1)))
+
+    assert(all5.contains(Creature(p(6, 3), CreatureType.Goblin, hp = 1)))
+    assert(!all6.contains(Creature(p(6, 3), CreatureType.Goblin, hp = 1)))
+
+    assert(all8.contains(Creature(p(7, 5), CreatureType.Goblin, hp = 1)))
+    assert(!all9.contains(Creature(p(7, 5), CreatureType.Goblin, hp = 1)))
   }
 }
