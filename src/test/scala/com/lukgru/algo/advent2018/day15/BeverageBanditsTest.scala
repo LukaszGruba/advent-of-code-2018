@@ -1,6 +1,7 @@
 package com.lukgru.algo.advent2018.day15
 
 import com.lukgru.algo.advent2018.day15.BeverageBandits.{Creature, CreatureType, Position}
+import com.lukgru.algo.advent2018.utils.InputLoader
 import org.scalatest.FunSuite
 
 class BeverageBanditsTest extends FunSuite {
@@ -51,12 +52,12 @@ class BeverageBanditsTest extends FunSuite {
 
     //then
     val expectedCreatures = List(
-      Creature(p(2, 1), CreatureType.Goblin),
-      Creature(p(4, 2), CreatureType.Elf),
-      Creature(p(5, 2), CreatureType.Goblin),
-      Creature(p(5, 3), CreatureType.Goblin),
-      Creature(p(3, 4), CreatureType.Goblin),
-      Creature(p(5, 4), CreatureType.Elf)
+      Creature("2 1", p(2, 1), CreatureType.Goblin),
+      Creature("4 2", p(4, 2), CreatureType.Elf),
+      Creature("5 2", p(5, 2), CreatureType.Goblin),
+      Creature("5 3", p(5, 3), CreatureType.Goblin),
+      Creature("3 4", p(3, 4), CreatureType.Goblin),
+      Creature("5 4", p(5, 4), CreatureType.Elf)
     )
     assert(creatures == expectedCreatures)
   }
@@ -64,12 +65,12 @@ class BeverageBanditsTest extends FunSuite {
   test("should sort creatures by position") {
     //given
     val creatures = List(
-      Creature(p(5, 3), CreatureType.Goblin),
-      Creature(p(2, 1), CreatureType.Goblin),
-      Creature(p(5, 2), CreatureType.Goblin),
-      Creature(p(3, 4), CreatureType.Goblin),
-      Creature(p(5, 4), CreatureType.Elf),
-      Creature(p(4, 2), CreatureType.Elf),
+      Creature("5 3", p(5, 3), CreatureType.Goblin),
+      Creature("2 1", p(2, 1), CreatureType.Goblin),
+      Creature("5 2", p(5, 2), CreatureType.Goblin),
+      Creature("3 4", p(3, 4), CreatureType.Goblin),
+      Creature("5 4", p(5, 4), CreatureType.Elf),
+      Creature("4 2", p(4, 2), CreatureType.Elf),
     )
 
     //when
@@ -77,12 +78,12 @@ class BeverageBanditsTest extends FunSuite {
 
     //then
     val expected = List(
-      Creature(p(2, 1), CreatureType.Goblin),
-      Creature(p(4, 2), CreatureType.Elf),
-      Creature(p(5, 2), CreatureType.Goblin),
-      Creature(p(5, 3), CreatureType.Goblin),
-      Creature(p(3, 4), CreatureType.Goblin),
-      Creature(p(5, 4), CreatureType.Elf)
+      Creature("2 1", p(2, 1), CreatureType.Goblin),
+      Creature("4 2", p(4, 2), CreatureType.Elf),
+      Creature("5 2", p(5, 2), CreatureType.Goblin),
+      Creature("5 3", p(5, 3), CreatureType.Goblin),
+      Creature("3 4", p(3, 4), CreatureType.Goblin),
+      Creature("5 4", p(5, 4), CreatureType.Elf)
     )
     assert(sorted == expected)
   }
@@ -90,12 +91,12 @@ class BeverageBanditsTest extends FunSuite {
   test("should find enemies") {
     //given
     val creatures = List(
-      Creature(p(2, 1), CreatureType.Goblin),
-      Creature(p(4, 2), CreatureType.Elf),
-      Creature(p(5, 2), CreatureType.Goblin),
-      Creature(p(5, 3), CreatureType.Goblin),
-      Creature(p(3, 4), CreatureType.Goblin),
-      Creature(p(5, 4), CreatureType.Elf)
+      Creature("2 1", p(2, 1), CreatureType.Goblin),
+      Creature("4 2", p(4, 2), CreatureType.Elf),
+      Creature("5 2", p(5, 2), CreatureType.Goblin),
+      Creature("5 3", p(5, 3), CreatureType.Goblin),
+      Creature("3 4", p(3, 4), CreatureType.Goblin),
+      Creature("5 4", p(5, 4), CreatureType.Elf)
     )
 
     //when
@@ -103,10 +104,10 @@ class BeverageBanditsTest extends FunSuite {
 
     //then
     assert(enemies == List(
-      Creature(p(2, 1), CreatureType.Goblin),
-      Creature(p(5, 2), CreatureType.Goblin),
-      Creature(p(5, 3), CreatureType.Goblin),
-      Creature(p(3, 4), CreatureType.Goblin)
+      Creature("2 1", p(2, 1), CreatureType.Goblin),
+      Creature("5 2", p(5, 2), CreatureType.Goblin),
+      Creature("5 3", p(5, 3), CreatureType.Goblin),
+      Creature("3 4", p(3, 4), CreatureType.Goblin)
     ))
   }
 
@@ -225,7 +226,7 @@ class BeverageBanditsTest extends FunSuite {
     )
     val map = BeverageBandits.parseCaveMap(input)
     val allCreatures = BeverageBandits.parseCreatures(input)
-    val elf = Creature(p(1, 1), CreatureType.Elf)
+    val elf = Creature("1 1", p(1, 1), CreatureType.Elf)
 
     //when
     val enemyPathOpt = BeverageBandits.findPathToNearestEnemy(map)(elf, allCreatures)
@@ -239,13 +240,13 @@ class BeverageBanditsTest extends FunSuite {
 
   test("should attack nearest enemy") {
     //given
-    val creature = Creature(p(10, 10), CreatureType.Elf)
+    val creature = Creature("10 10", p(10, 10), CreatureType.Elf)
     val allCreatures = List(
       creature,
-      Creature(p(9, 10), CreatureType.Elf),
-      Creature(p(11, 10), CreatureType.Goblin),
-      Creature(p(10, 9), CreatureType.Elf),
-      Creature(p(10, 11), CreatureType.Goblin)
+      Creature("9 10", p(9, 10), CreatureType.Elf),
+      Creature("11 10", p(11, 10), CreatureType.Goblin),
+      Creature("10 9", p(10, 9), CreatureType.Elf),
+      Creature("10 11", p(10, 11), CreatureType.Goblin)
     )
 
     //when
@@ -254,10 +255,10 @@ class BeverageBanditsTest extends FunSuite {
     //then
     assert(newAllCreatures == List(
       creature,
-      Creature(p(9, 10), CreatureType.Elf),
-      Creature(p(11, 10), CreatureType.Goblin, hp = 197),
-      Creature(p(10, 9), CreatureType.Elf),
-      Creature(p(10, 11), CreatureType.Goblin)
+      Creature("9 10", p(9, 10), CreatureType.Elf),
+      Creature("11 10", p(11, 10), CreatureType.Goblin, hp = 197),
+      Creature("10 9", p(10, 9), CreatureType.Elf),
+      Creature("10 11", p(10, 11), CreatureType.Goblin)
     ))
   }
 
@@ -293,17 +294,17 @@ class BeverageBanditsTest extends FunSuite {
     assert(List(c1, c2, c3, c4, c5, c6, c7, c8, c9).map(_.pos)
       == List(p(2, 1), p(2, 2), p(3, 2), p(4, 2), p(5, 2), p(6, 2), p(7, 2), p(7, 3), p(7, 4)))
 
-    assert(all1.contains(Creature(p(2, 3), CreatureType.Goblin, hp = 1)))
-    assert(!all2.contains(Creature(p(2, 3), CreatureType.Goblin, hp = 1)))
+    assert(all1.contains(Creature("2 3", p(2, 3), CreatureType.Goblin, hp = 1)))
+    assert(!all2.contains(Creature("2 3", p(2, 3), CreatureType.Goblin, hp = 1)))
 
-    assert(all2.contains(Creature(p(4, 2), CreatureType.Goblin, hp = 1)))
-    assert(!all3.contains(Creature(p(4, 2), CreatureType.Goblin, hp = 1)))
+    assert(all2.contains(Creature("4 2", p(4, 2), CreatureType.Goblin, hp = 1)))
+    assert(!all3.contains(Creature("4 2", p(4, 2), CreatureType.Goblin, hp = 1)))
 
-    assert(all5.contains(Creature(p(6, 3), CreatureType.Goblin, hp = 1)))
-    assert(!all6.contains(Creature(p(6, 3), CreatureType.Goblin, hp = 1)))
+    assert(all5.contains(Creature("6 3", p(6, 3), CreatureType.Goblin, hp = 1)))
+    assert(!all6.contains(Creature("6 3", p(6, 3), CreatureType.Goblin, hp = 1)))
 
-    assert(all8.contains(Creature(p(7, 5), CreatureType.Goblin, hp = 1)))
-    assert(!all9.contains(Creature(p(7, 5), CreatureType.Goblin, hp = 1)))
+    assert(all8.contains(Creature("7 5", p(7, 5), CreatureType.Goblin, hp = 1)))
+    assert(!all9.contains(Creature("7 5", p(7, 5), CreatureType.Goblin, hp = 1)))
   }
 
   test("should play several rounds") {
@@ -347,15 +348,15 @@ class BeverageBanditsTest extends FunSuite {
     //    #.......#
     //    #########
     assert(all1 == List(
-      Creature(p(2, 1), CreatureType.Elf, hp = 3),
-      Creature(p(4, 1), CreatureType.Elf, hp = 6),
-      Creature(p(2, 2), CreatureType.Goblin, hp = 6),
-      Creature(p(5, 2), CreatureType.Elf, hp = 6),
-      Creature(p(5, 3), CreatureType.Elf, hp = 3),
-      Creature(p(6, 3), CreatureType.Goblin, hp = 3),
-      Creature(p(1, 4), CreatureType.Goblin, hp = 6),
-      Creature(p(4, 4), CreatureType.Goblin, hp = 6),
-      Creature(p(7, 4), CreatureType.Goblin, hp = 6)
+      Creature("1 1", p(2, 1), CreatureType.Elf, hp = 3),
+      Creature("3 1", p(4, 1), CreatureType.Elf, hp = 6),
+      Creature("2 3", p(2, 2), CreatureType.Goblin, hp = 6),
+      Creature("5 1", p(5, 2), CreatureType.Elf, hp = 6),
+      Creature("4 3", p(5, 3), CreatureType.Elf, hp = 3),
+      Creature("6 3", p(6, 3), CreatureType.Goblin, hp = 3),
+      Creature("1 5", p(1, 4), CreatureType.Goblin, hp = 6),
+      Creature("4 5", p(4, 4), CreatureType.Goblin, hp = 6),
+      Creature("7 5", p(7, 4), CreatureType.Goblin, hp = 6)
     ))
 
     //    #########
@@ -368,12 +369,12 @@ class BeverageBanditsTest extends FunSuite {
     //    #.......#
     //    #########
     assert(all2 == List(
-      Creature(p(3, 1), CreatureType.Elf, hp = 6),
-      Creature(p(2, 2), CreatureType.Goblin, hp = 3),
-      Creature(p(6, 2), CreatureType.Elf, hp = 6),
-      Creature(p(1, 3), CreatureType.Goblin, hp = 6),
-      Creature(p(7, 3), CreatureType.Goblin, hp = 6),
-      Creature(p(4, 4), CreatureType.Goblin, hp = 3)
+      Creature("3 1", p(3, 1), CreatureType.Elf, hp = 6),
+      Creature("2 3", p(2, 2), CreatureType.Goblin, hp = 3),
+      Creature("5 1", p(6, 2), CreatureType.Elf, hp = 6),
+      Creature("1 5", p(1, 3), CreatureType.Goblin, hp = 6),
+      Creature("7 5", p(7, 3), CreatureType.Goblin, hp = 6),
+      Creature("4 5", p(4, 4), CreatureType.Goblin, hp = 3)
     ))
 
     //    #########
@@ -386,11 +387,11 @@ class BeverageBanditsTest extends FunSuite {
     //    #.......#
     //    #########
     assert(all3 == List(
-      Creature(p(2, 1), CreatureType.Elf, hp = 6),
-      Creature(p(1, 2), CreatureType.Goblin, hp = 6),
-      Creature(p(7, 2), CreatureType.Elf, hp = 3),
-      Creature(p(4, 3), CreatureType.Goblin, hp = 3),
-      Creature(p(7, 3), CreatureType.Goblin, hp = 3)
+      Creature("3 1", p(2, 1), CreatureType.Elf, hp = 6),
+      Creature("1 5", p(1, 2), CreatureType.Goblin, hp = 6),
+      Creature("5 1", p(7, 2), CreatureType.Elf, hp = 3),
+      Creature("4 5", p(4, 3), CreatureType.Goblin, hp = 3),
+      Creature("7 5", p(7, 3), CreatureType.Goblin, hp = 3)
     ))
 
     //    #########
@@ -403,10 +404,10 @@ class BeverageBanditsTest extends FunSuite {
     //    #.......#
     //    #########
     assert(all4 == List(
-      Creature(p(1, 1), CreatureType.Elf, hp = 3),
-      Creature(p(1, 2), CreatureType.Goblin, hp = 3),
-      Creature(p(4, 2), CreatureType.Goblin, hp = 3),
-      Creature(p(7, 2), CreatureType.Elf, hp = 3)
+      Creature("3 1", p(1, 1), CreatureType.Elf, hp = 3),
+      Creature("1 5", p(1, 2), CreatureType.Goblin, hp = 3),
+      Creature("4 5", p(4, 2), CreatureType.Goblin, hp = 3),
+      Creature("5 1", p(7, 2), CreatureType.Elf, hp = 3)
     ))
 
     //    #########
@@ -419,8 +420,8 @@ class BeverageBanditsTest extends FunSuite {
     //    #.......#
     //    #########
     assert(all5 == List(
-      Creature(p(1, 1), CreatureType.Elf, hp = 3),
-      Creature(p(6, 2), CreatureType.Elf, hp = 3)
+      Creature("3 1", p(1, 1), CreatureType.Elf, hp = 3),
+      Creature("5 1", p(6, 2), CreatureType.Elf, hp = 3)
     ))
   }
 
@@ -559,13 +560,13 @@ class BeverageBanditsTest extends FunSuite {
 
   test("should attack enemy with fewest HP first") {
     //given
-    val attacker = Creature(Position(5,5), CreatureType.Elf)
+    val attacker = Creature("5 5", Position(5,5), CreatureType.Elf)
     val all = List(
-      Creature(Position(5,4), CreatureType.Goblin, hp = 10),
-      Creature(Position(4,5), CreatureType.Goblin, hp = 9),
+      Creature("5 4", Position(5,4), CreatureType.Goblin, hp = 10),
+      Creature("4 5", Position(4,5), CreatureType.Goblin, hp = 9),
       attacker,
-      Creature(Position(5,6), CreatureType.Goblin, hp = 1),
-      Creature(Position(6,5), CreatureType.Goblin, hp = 2)
+      Creature("5 6", Position(5,6), CreatureType.Goblin, hp = 1),
+      Creature("6 5", Position(6,5), CreatureType.Goblin, hp = 2)
     )
 
     //when
@@ -573,23 +574,23 @@ class BeverageBanditsTest extends FunSuite {
 
     //then
     val expected = List(
-      Creature(Position(5,4), CreatureType.Goblin, hp = 10),
-      Creature(Position(4,5), CreatureType.Goblin, hp = 9),
+      Creature("5 4", Position(5,4), CreatureType.Goblin, hp = 10),
+      Creature("4 5", Position(4,5), CreatureType.Goblin, hp = 9),
       attacker,
-      Creature(Position(6,5), CreatureType.Goblin, hp = 2)
+      Creature("6 5", Position(6,5), CreatureType.Goblin, hp = 2)
     )
     assert(afterAttack == expected)
   }
 
   test("should attack enemy with fewest HP first, if same HP -> in reading order") {
     //given
-    val attacker = Creature(Position(5,5), CreatureType.Elf)
+    val attacker = Creature("5 5", Position(5,5), CreatureType.Elf)
     val all = List(
-      Creature(Position(5,4), CreatureType.Goblin, hp = 10),
-      Creature(Position(4,5), CreatureType.Goblin, hp = 1),
+      Creature("5 4", Position(5,4), CreatureType.Goblin, hp = 10),
+      Creature("4 5", Position(4,5), CreatureType.Goblin, hp = 1),
       attacker,
-      Creature(Position(5,6), CreatureType.Goblin, hp = 1),
-      Creature(Position(6,5), CreatureType.Goblin, hp = 2)
+      Creature("5 6", Position(5,6), CreatureType.Goblin, hp = 1),
+      Creature("6 5", Position(6,5), CreatureType.Goblin, hp = 2)
     )
 
     //when
@@ -597,12 +598,25 @@ class BeverageBanditsTest extends FunSuite {
 
     //then
     val expected = List(
-      Creature(Position(5,4), CreatureType.Goblin, hp = 10),
+      Creature("5 4", Position(5,4), CreatureType.Goblin, hp = 10),
       attacker,
-      Creature(Position(5,6), CreatureType.Goblin, hp = 1),
-      Creature(Position(6,5), CreatureType.Goblin, hp = 2)
+      Creature("5 6", Position(5,6), CreatureType.Goblin, hp = 1),
+      Creature("6 5", Position(6,5), CreatureType.Goblin, hp = 2)
     )
     assert(afterAttack == expected)
+  }
+
+  test("should solve part 1") {
+    //given
+    val input = InputLoader.loadLines("day15-input")
+
+    //when
+    val (numberOfRounds, totalHP, winner) = BeverageBandits.runSimulation(input)
+
+    //then
+    assert(numberOfRounds == 76)
+    assert(totalHP == 2656)
+    assert(winner == CreatureType.Goblin)
   }
 
 }

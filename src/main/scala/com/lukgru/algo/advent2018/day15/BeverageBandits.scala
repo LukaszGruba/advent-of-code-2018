@@ -16,8 +16,8 @@ object BeverageBandits {
     override def toString: String = s"p($x,$y)"
   }
 
-  case class Creature(pos: Position, cType: CreatureType, hp: Int = 200, attackPower: Int = 3) {
-    override def toString: String = s"$cType((${pos.x},${pos.y}), $hp)"
+  case class Creature(id: String, pos: Position, cType: CreatureType, hp: Int = 200, attackPower: Int = 3) {
+    override def toString: String = s"$cType($id, (${pos.x},${pos.y}), $hp)"
   }
 
   def parseCaveMap(lines: List[String]): Set[Position] =
@@ -38,12 +38,12 @@ object BeverageBandits {
       .zipWithIndex
       .flatMap { case (xs, y) =>
         xs.filter { case (c, _) => c == 'G' || c == 'E' }
-          .map { case (c, x) => Creature(Position(x, y), cType(c)) }
+          .map { case (c, x) => Creature(s"$x $y", Position(x, y), cType(c)) }
       }
   }
 
   def sortByPosition(creatures: List[Creature]): List[Creature] =
-    creatures.sortBy { case Creature(Position(x, y), _, _, _) => (y, x) }
+    creatures.sortBy { case Creature(_, Position(x, y), _, _, _) => (y, x) }
 
   def findEnemies(attackerType: CreatureType, allCreatures: List[Creature]): List[Creature] =
     allCreatures.filterNot(_.cType == attackerType)
@@ -154,7 +154,7 @@ object BeverageBandits {
       case None => (creature, allCreatures)
       case Some((_, path)) =>
         val creatureAfterMove = move(creature, path)
-        val allOtherCreatures = allCreatures.filterNot(c => c.pos == creature.pos)
+        val allOtherCreatures = allCreatures.filterNot(c => c.id == creatureAfterMove.id)
         val creaturesAfterAttack = attackNearestEnemy(creatureAfterMove, allOtherCreatures)
         (creatureAfterMove, creaturesAfterAttack :+ creatureAfterMove)
     }
@@ -164,7 +164,7 @@ object BeverageBandits {
     val sorted = sortByPosition(allCreatures)
     val afterRound = sorted.foldLeft(sorted) {
       case (creatures, currentCreature) =>
-        creatures.find(_.pos == currentCreature.pos)
+        creatures.find(_.id == currentCreature.id)
           .map(takeTurn(map)(_, creatures)._2)
           .getOrElse(creatures)
     }
@@ -218,9 +218,6 @@ object BeverageBandits {
     println(sb.mkString)
   }
 
-  //75 * 2659 = 199425 -> TOO LOW
-  //            200500 -> NOT RIGHT
-  //76 * 2659 = 202084 -> TOO HIGH
   def main(args: Array[String]): Unit = {
     val input = InputLoader.loadLines("day15-input")
     val (numberOfFullRounds, totalHPLeft, winningArmy) = runSimulation(input)
