@@ -470,4 +470,92 @@ class BeverageBanditsTest extends FunSuite {
     assert(totalHP == 982)
     assert(winner == CreatureType.Elf)
   }
+
+  test("should run simulation for example2") {
+    //given
+    val input = List(
+      "#######",
+      "#E..EG#",
+      "#.#G.E#",
+      "#E.##E#",
+      "#G..#.#",
+      "#..E#.#",
+      "#######"
+    )
+
+    //when
+    val (numberOfRounds, totalHP, winner) = BeverageBandits.runSimulation(input)
+
+    //then
+    assert(numberOfRounds == 46)
+    assert(totalHP == 859)
+    assert(winner == CreatureType.Elf)
+  }
+
+  test("should run simulation for example3") {
+    //given
+    val input = List(
+      "#######",
+      "#E.G#.#",
+      "#.#G..#",
+      "#G.#.G#",
+      "#G..#.#",
+      "#...E.#",
+      "#######"
+    )
+
+    //when
+    val (numberOfRounds, totalHP, winner) = BeverageBandits.runSimulation(input)
+
+    //then
+    assert(numberOfRounds == 35)
+    assert(totalHP == 793)
+    assert(winner == CreatureType.Goblin)
+  }
+
+  test("should run simulation for example4") {
+    //given
+    val input = List(
+      "#######",
+      "#.E...#",
+      "#.#..G#",
+      "#.###.#",
+      "#E#G#G#",
+      "#...#G#",
+      "#######"
+    )
+
+    //when
+    val (numberOfRounds, totalHP, winner) = BeverageBandits.runSimulation(input)
+
+    //then
+    assert(numberOfRounds == 54)
+    assert(totalHP == 536)
+    assert(winner == CreatureType.Goblin)
+  }
+
+  test("should run simulation for example5") {
+    //given
+    val input = List(
+      "#########",
+      "#G......#",
+      "#.E.#...#",
+      "#..##..G#",
+      "#...##..#",
+      "#...#...#",
+      "#.G...G.#",
+      "#.....G.#",
+      "#########"
+    )
+
+    //when
+    val (numberOfRounds, totalHP, winner) = BeverageBandits.runSimulation(input)
+
+    //then
+    assert(numberOfRounds == 20)
+    assert(totalHP == 937)
+    assert(winner == CreatureType.Goblin)
+  }
+
+
 }
