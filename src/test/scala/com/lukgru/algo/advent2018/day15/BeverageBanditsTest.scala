@@ -171,14 +171,45 @@ class BeverageBanditsTest extends FunSuite {
     )
     val map = BeverageBandits.parseCaveMap(input)
     val start = Position(26, 1)
-    val end = Position(28, 27)
+    val end = Position(5, 30)
 
     //when
     val shortestPath = BeverageBandits.findShortestPath(map)(start, end)
 
     //then
     assert(shortestPath.isDefined)
-    assert(shortestPath.get == List(p(1, 1), p(2, 1), p(3, 1), p(3, 2), p(3, 3), p(3, 4), p(2, 4), p(2, 5), p(1, 5)))
+    assert(shortestPath.get == List(
+      p(26, 1), p(25, 1),
+      p(25, 2),
+      p(25, 3), p(24, 3), p(23, 3), p(22, 3), p(21, 3),
+      p(21, 4),
+      p(21, 5),
+      p(21, 6),
+      p(21, 7),
+      p(21, 8),
+      p(21, 9),
+      p(21, 10),
+      p(21, 11),
+      p(21, 12),
+      p(21, 13),
+      p(21, 14),
+      p(21, 15),
+      p(21, 16),
+      p(21, 17),
+      p(21, 18),
+      p(21, 19), p(20, 19),
+      p(20, 20), p(19, 20),
+      p(19, 21), p(18, 21), p(17, 21), p(16, 21), p(15, 21), p(14, 21), p(13, 21), p(12, 21), p(11, 21), p(10, 21),
+      p(10, 22), p(9, 22), p(8, 22), p(7, 22),
+      p(7, 23), p(6, 23),
+      p(6, 24),
+      p(6, 25), p(5, 25),
+      p(5, 26), p(4, 26),
+      p(4, 27),
+      p(4, 28), p(5, 28),
+      p(5, 29),
+      p(5, 30)
+    ))
   }
 
   test("should locate nearest enemy and the shortest path to him") {

@@ -3,6 +3,8 @@ package com.lukgru.algo.advent2018.day15
 import com.lukgru.algo.advent2018.day15.BeverageBandits.CreatureType.CreatureType
 import com.lukgru.algo.advent2018.utils.InputLoader
 
+import scala.collection.mutable
+
 object BeverageBandits {
 
   object CreatureType extends Enumeration {
@@ -10,10 +12,12 @@ object BeverageBandits {
     val Elf, Goblin = Value
   }
 
-  case class Position(x: Int, y: Int)
+  case class Position(x: Int, y: Int) {
+    override def toString: String = s"p($x,$y)"
+  }
 
   case class Creature(pos: Position, cType: CreatureType, hp: Int = 200, attackPower: Int = 3) {
-    override def toString() = s"$cType((${pos.x},${pos.y}), $hp)"
+    override def toString: String = s"$cType((${pos.x},${pos.y}), $hp)"
   }
 
   def parseCaveMap(lines: List[String]): Set[Position] =
@@ -65,7 +69,47 @@ object BeverageBandits {
       }
     }
 
-    bfs(start, end, map)
+    def bfsImper(start: Position, end: Position): Option[List[Position]] = {
+      def possibleNextSteps(pos: Position, available: mutable.Set[Position]): List[Position] =
+        nearestPositions(pos).filter(available.contains)
+
+      val prevs = mutable.Map.empty[Position, Position]
+      val notVisited = mutable.Set() ++ map + start + end
+      var remaining = mutable.Queue(start)
+      var current = start
+      while (current != end && remaining.nonEmpty) {
+        current = remaining.dequeue()
+        possibleNextSteps(current, notVisited).foreach{
+          possibleStep =>
+            if (!remaining.contains(possibleStep)) {
+              remaining += possibleStep
+            }
+            if (!prevs.contains(possibleStep)) {
+              prevs.put(possibleStep, current)
+            }
+        }
+        notVisited.remove(current)
+      }
+      if (current == end) {
+        var c = end
+        var path = List(c)
+        while (c != start) {
+          val prev = prevs(c)
+          path = prev +: path
+          c = prev
+        }
+        Some(path)
+      }
+      else None
+    }
+
+    def bfs2(s: Stream[Position], f: Position => Stream[Position]): Stream[Position] = {
+      if (s.isEmpty) s
+      else s.head #:: bfs2(s.tail.append(f(s.head)), f)
+    }
+
+//    bfs(start, end, map)
+    bfsImper(start, end)
   }
 
   def findPathToNearestEnemy(map: Set[Position])(creature: Creature, allCreatures: List[Creature]): Option[(Position, List[Position])] = {
