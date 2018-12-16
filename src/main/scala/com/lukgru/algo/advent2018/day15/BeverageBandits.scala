@@ -12,7 +12,9 @@ object BeverageBandits {
 
   case class Position(x: Int, y: Int)
 
-  case class Creature(pos: Position, cType: CreatureType, hp: Int = 200, attackPower: Int = 3)
+  case class Creature(pos: Position, cType: CreatureType, hp: Int = 200, attackPower: Int = 3) {
+    override def toString() = s"$cType((${pos.x},${pos.y}), $hp)"
+  }
 
   def parseCaveMap(lines: List[String]): Set[Position] =
     lines.map(_.zipWithIndex)
@@ -102,13 +104,65 @@ object BeverageBandits {
       case None => (creature, allCreatures)
       case Some((_, path)) =>
         val creatureAfterMove = move(creature, path)
-        val allOtherCreatures = allCreatures.filterNot(creature.==)
+        val allOtherCreatures = allCreatures.filterNot(c => c.pos == creature.pos)
         val creaturesAfterAttack = attackNearestEnemy(creatureAfterMove, allOtherCreatures)
         (creatureAfterMove, creaturesAfterAttack :+ creatureAfterMove)
     }
   }
 
-  def runSimulation(input: List[String]): (Int, Int, CreatureType) = ???
+  def playRound(map: Set[Position])(allCreatures: List[Creature]): List[Creature] = {
+    val sorted = sortByPosition(allCreatures)
+    sorted.foldLeft(sorted) {
+      case (creatures, currentCreature) => {
+        creatures.find(c => c.pos == currentCreature.pos)
+            .map(takeTurn(map)(_, creatures)._2)
+            .getOrElse(creatures)
+      }
+    }
+  }
+
+  def isWarOver(allCreatures: List[Creature]): Boolean = allCreatures.groupBy(_.cType).size == 1
+
+  def playWar(map: Set[Position])(creatures: List[Creature]): (Int, Int, CreatureType) = {
+    var currentCreatures = creatures
+    var roundNo = 0
+    printState(map)(currentCreatures)
+    while (!isWarOver(currentCreatures)) {
+      currentCreatures = playRound(map)(currentCreatures)
+      currentCreatures = sortByPosition(currentCreatures)
+      println(roundNo)
+      printState(map)(currentCreatures)
+      roundNo += 1
+    }
+    val sumOfHp = currentCreatures.map(_.hp).sum
+    val winnerRace = currentCreatures.head.cType
+    (roundNo, sumOfHp, winnerRace)
+  }
+
+  def runSimulation(input: List[String]): (Int, Int, CreatureType) = {
+    val map = parseCaveMap(input)
+    val creatures = sortByPosition(parseCreatures(input))
+    playWar(map)(creatures)
+  }
+
+  def printState(map: Set[Position])(creatures: List[Creature]): Unit = {
+    val width = map.map(_.x).max
+    val height = map.map(_.y).max
+    val sb = new StringBuilder()
+    sb.append(creatures).append('\n')
+    for (y <- 0 to height + 1) {
+      for (x <- 0 to width + 1) {
+        val p = Position(x, y)
+        val c =
+          if (creatures.exists(_.pos == p)) creatures.find(_.pos == p).get.cType.toString.head
+          else if (map.contains(p)) '.'
+          else '#'
+        sb.append(c)
+      }
+      sb.append('\n')
+    }
+    println(sb.mkString)
+  }
 
   def main(args: Array[String]): Unit = {
     val input = InputLoader.loadLines("day15-input")

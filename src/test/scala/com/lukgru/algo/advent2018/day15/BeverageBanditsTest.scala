@@ -112,7 +112,6 @@ class BeverageBanditsTest extends FunSuite {
 
   test("should find shortest path") {
     //given
-    //given
     val input = List(
       "#######",
       "#S....#",
@@ -125,6 +124,54 @@ class BeverageBanditsTest extends FunSuite {
     val map = BeverageBandits.parseCaveMap(input)
     val start = Position(1, 1)
     val end = Position(1, 5)
+
+    //when
+    val shortestPath = BeverageBandits.findShortestPath(map)(start, end)
+
+    //then
+    assert(shortestPath.isDefined)
+    assert(shortestPath.get == List(p(1, 1), p(2, 1), p(3, 1), p(3, 2), p(3, 3), p(3, 4), p(2, 4), p(2, 5), p(1, 5)))
+  }
+
+  test("should find shortest path for big map") {
+    //given
+    val input = List(
+      "################################",
+      "#########################.S.####",
+      "#########################....###",
+      "##################.#.........###",
+      "##################.##.......####",
+      "#################...#.........##",
+      "################..............##",
+      "######..########...#...#.#....##",
+      "#####....######.#.##.....##.####",
+      "#######.######............#.####",
+      "#####............#......#...####",
+      "#####..#......................##",
+      "########......#####..........###",
+      "#######......#######..........##",
+      "######...#.##########........###",
+      "######......#########........###",
+      "#####.......#########........###",
+      "#####....#..#########........###",
+      "######.##.#.#########......#####",
+      "#######......#######.......#####",
+      "#######.......#####....#...#####",
+      "##.#..#.##............##.....###",
+      "#.....#........###..#.#.....####",
+      "#.........#.#...#####.#.#....###",
+      "######......#.....###...#.#.####",
+      "#####........##...###..####..###",
+      "####...##.##....######.####...##",
+      "####.#########....####.####....#",
+      "###...#######.....####.####....#",
+      "####..#######.##.##########...##",
+      "####..######################.###",
+      "################################"
+    )
+    val map = BeverageBandits.parseCaveMap(input)
+    val start = Position(26, 1)
+    val end = Position(28, 27)
 
     //when
     val shortestPath = BeverageBandits.findShortestPath(map)(start, end)
@@ -226,5 +273,148 @@ class BeverageBanditsTest extends FunSuite {
 
     assert(all8.contains(Creature(p(7, 5), CreatureType.Goblin, hp = 1)))
     assert(!all9.contains(Creature(p(7, 5), CreatureType.Goblin, hp = 1)))
+  }
+
+  test("should play several rounds") {
+    //given
+    val input = List(
+      "#########",
+      "#E.E.E..#",
+      "#...G...#",
+      "#.G.E.G.#",
+      "#.......#",
+      "#G..G..G#",
+      "#.......#",
+      "#.......#",
+      "#########"
+    )
+    val map = BeverageBandits.parseCaveMap(input)
+    val initAll = BeverageBandits.parseCreatures(input).map(c => c.copy(hp = 6))
+
+    //when
+    val all1 = BeverageBandits.playRound(map)(initAll)
+    val all2 = BeverageBandits.playRound(map)(all1)
+    val all3 = BeverageBandits.playRound(map)(all2)
+    val all4 = BeverageBandits.playRound(map)(all3)
+    val all5 = BeverageBandits.playRound(map)(all4)
+
+    //then
+    val s1 = List(
+      "#########",
+      "#.E.E...#    6,6",
+      "#....EG.#    3,6",
+      "#..G....#    6",
+      "#G..G..G#    6,6,6",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#########"
+    )
+    assert(all1 == List(
+      Creature(p(2, 1), CreatureType.Elf, hp = 6),
+      Creature(p(4, 1), CreatureType.Elf, hp = 6),
+      Creature(p(5, 2), CreatureType.Elf, hp = 3),
+      Creature(p(6, 2), CreatureType.Goblin, hp = 6),
+      Creature(p(3, 3), CreatureType.Goblin, hp = 6),
+      Creature(p(1, 4), CreatureType.Goblin, hp = 6),
+      Creature(p(4, 4), CreatureType.Goblin, hp = 6),
+      Creature(p(6, 5), CreatureType.Goblin, hp = 6)
+    ))
+
+    val s2 = List(
+      "#########",
+      "#..E.E..#    3,6",
+      "#..G..G.#    3,3",
+      "#G..G...#    6,6",
+      "#.....G.#    6",
+      "#.......#    ",
+      "#.......#",
+      "#.......#",
+      "#########"
+    )
+    assert(all2 == List(
+      Creature(p(3, 1), CreatureType.Elf, hp = 3),
+      Creature(p(5, 1), CreatureType.Elf, hp = 6),
+      Creature(p(3, 2), CreatureType.Goblin, hp = 3),
+      Creature(p(6, 2), CreatureType.Goblin, hp = 3),
+      Creature(p(1, 3), CreatureType.Goblin, hp = 6),
+      Creature(p(4, 3), CreatureType.Goblin, hp = 6),
+      Creature(p(6, 4), CreatureType.Goblin, hp = 6)
+    ))
+
+    val s3 = List(
+      "#########",
+      "#..E..E.#    3,6",
+      "#G..G...#    6,6",
+      "#.....G.#    6",
+      "#.......#    ",
+      "#.......#    ",
+      "#.......#",
+      "#.......#",
+      "#########"
+    )
+    assert(all3 == List(
+      Creature(p(3, 1), CreatureType.Elf, hp = 3),
+      Creature(p(6, 1), CreatureType.Elf, hp = 6),
+      Creature(p(1, 2), CreatureType.Goblin, hp = 6),
+      Creature(p(4, 2), CreatureType.Goblin, hp = 6),
+      Creature(p(6, 3), CreatureType.Goblin, hp = 6)
+    ))
+
+    val s4 = List(
+      "#########",
+      "#G......#    6",
+      "#...G.E.#    3,3",
+      "#.....G.#    3",
+      "#.......#    ",
+      "#.......#    ",
+      "#.......#",
+      "#.......#",
+      "#########"
+    )
+    assert(all4 == List(
+      Creature(p(1, 1), CreatureType.Goblin, hp = 6),
+      Creature(p(4, 2), CreatureType.Goblin, hp = 3),
+      Creature(p(6, 2), CreatureType.Elf, hp = 3),
+      Creature(p(6, 3), CreatureType.Goblin, hp = 3)
+    ))
+
+    val s5 = List(
+      "#########",
+      "#.G.....#    6",
+      "#....G..#    3",
+      "#.....G.#    3",
+      "#.......#    ",
+      "#.......#    ",
+      "#.......#",
+      "#.......#",
+      "#########"
+    )
+    assert(all5 == List(
+      Creature(p(2, 1), CreatureType.Goblin, hp = 6),
+      Creature(p(5, 2), CreatureType.Goblin, hp = 3),
+      Creature(p(6, 3), CreatureType.Goblin, hp = 3)
+    ))
+  }
+
+  test("should run simulation for example1") {
+    //given
+    val input = List(
+      "#######",
+      "#G..#E#",
+      "#E#E.E#",
+      "#G.##.#",
+      "#...#E#",
+      "#...E.#",
+      "#######"
+    )
+
+    //when
+    val (numberOfRounds, totalHP, winner) = BeverageBandits.runSimulation(input)
+
+    //then
+    assert(numberOfRounds == 37)
+    assert(totalHP == 982)
+    assert(winner == CreatureType.Elf)
   }
 }
