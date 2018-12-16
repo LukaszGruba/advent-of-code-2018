@@ -2,11 +2,15 @@ package com.lukgru.algo.advent2018.day15
 
 import com.lukgru.algo.advent2018.day15.BeverageBandits.{Creature, CreatureType, Position}
 import com.lukgru.algo.advent2018.utils.InputLoader
-import org.scalatest.FunSuite
+import org.scalatest.{BeforeAndAfter, FunSuite}
 
-class BeverageBanditsTest extends FunSuite {
+class BeverageBanditsTest extends FunSuite with BeforeAndAfter {
 
   def p = Position
+
+  before {
+    BeverageBandits.printingOn = false
+  }
 
   test("should parse cave map - allowed positions in the cave") {
     //given

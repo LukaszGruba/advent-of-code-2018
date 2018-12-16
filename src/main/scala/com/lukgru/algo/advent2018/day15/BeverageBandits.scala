@@ -7,6 +7,8 @@ import scala.collection.mutable
 
 object BeverageBandits {
 
+  var printingOn = true
+
   object CreatureType extends Enumeration {
     type CreatureType = Value
     val Elf, Goblin = Value
@@ -108,7 +110,6 @@ object BeverageBandits {
       else s.head #:: bfs2(s.tail.append(f(s.head)), f)
     }
 
-    //    bfs(start, end, map)
     bfsImper(start, end)
   }
 
@@ -146,10 +147,7 @@ object BeverageBandits {
     }
   }
 
-  def takeTurn(map: Set[Position])(creature: Creature, allCreatures: List[Creature]): (Creature, List[Creature]) = {
-    if (isWarOver(allCreatures)) {
-      println("WAR IS OVER!")
-    }
+  def takeTurn(map: Set[Position])(creature: Creature, allCreatures: List[Creature]): (Creature, List[Creature]) =
     findPathToNearestEnemy(map)(creature, allCreatures) match {
       case None => (creature, allCreatures)
       case Some((_, path)) =>
@@ -158,7 +156,6 @@ object BeverageBandits {
         val creaturesAfterAttack = attackNearestEnemy(creatureAfterMove, allOtherCreatures)
         (creatureAfterMove, creaturesAfterAttack :+ creatureAfterMove)
     }
-  }
 
   def playRound(map: Set[Position])(allCreatures: List[Creature]): List[Creature] = {
     val sorted = sortByPosition(allCreatures)
@@ -176,16 +173,11 @@ object BeverageBandits {
   def playWar(map: Set[Position])(creatures: List[Creature]): (Int, Int, CreatureType) = {
     var currentCreatures = creatures
     var roundNo = 0
-    println("INIT STATE:")
-    printState(map)(currentCreatures)
     while (!isWarOver(currentCreatures)) {
       currentCreatures = playRound(map)(currentCreatures)
       roundNo += 1
-      println(roundNo)
       printState(map)(currentCreatures)
     }
-    println("FINAL STATE:")
-    printState(map)(currentCreatures)
     val sumOfHp = currentCreatures.map(_.hp).sum
     val winnerRace = currentCreatures.head.cType
     (roundNo - 1, sumOfHp, winnerRace)
@@ -198,33 +190,39 @@ object BeverageBandits {
   }
 
   def printState(map: Set[Position])(creatures: List[Creature]): Unit = {
-    val width = map.map(_.x).max
-    val height = map.map(_.y).max
-    val sb = new StringBuilder()
-    sb.append(creatures).append('\n')
-    for (y <- 0 to height + 1) {
-      for (x <- 0 to width + 1) {
-        val p = Position(x, y)
-        val c =
-          if (creatures.exists(_.pos == p)) creatures.find(_.pos == p).get.cType.toString.head
-          else if (map.contains(p)) '.'
-          else '#'
-        sb.append(c)
+    if (printingOn) {
+      val width = map.map(_.x).max
+      val height = map.map(_.y).max
+      val sb = new StringBuilder()
+      sb.append(creatures).append('\n')
+      for (y <- 0 to height + 1) {
+        for (x <- 0 to width + 1) {
+          val p = Position(x, y)
+          val c =
+            if (creatures.exists(_.pos == p)) creatures.find(_.pos == p).get.cType.toString.head
+            else if (map.contains(p)) '.'
+            else '#'
+          sb.append(c)
+        }
+        sb.append("   ")
+        creatures.filter(_.pos.y == y).sortBy(_.pos.x).foreach(sb.append(_).append('\t'))
+        sb.append('\n')
       }
-      sb.append("   ")
-      creatures.filter(_.pos.y == y).sortBy(_.pos.x).foreach(sb.append(_).append('\t'))
-      sb.append('\n')
+      println(sb.mkString)
     }
-    println(sb.mkString)
+  }
+
+  def printOutcome(numberOfFullRounds: Int, totalHPLeft: Int, winningArmy: CreatureType): Unit = {
+    println(s"Combat ends after $numberOfFullRounds rounds.\n" +
+      s"${winningArmy}s win with $totalHPLeft total hit points left.\n" +
+      s"Outcome: $numberOfFullRounds * $totalHPLeft = ${numberOfFullRounds * totalHPLeft}"
+    )
   }
 
   def main(args: Array[String]): Unit = {
     val input = InputLoader.loadLines("day15-input")
     val (numberOfFullRounds, totalHPLeft, winningArmy) = runSimulation(input)
-    println(s"Combat ends after $numberOfFullRounds rounds.\n" +
-      s"${winningArmy}s win with $totalHPLeft total hit points left.\n" +
-      s"Outcome: $numberOfFullRounds * $totalHPLeft = ${numberOfFullRounds * totalHPLeft}"
-    )
+    printOutcome(numberOfFullRounds, totalHPLeft, winningArmy)
   }
 
 }
