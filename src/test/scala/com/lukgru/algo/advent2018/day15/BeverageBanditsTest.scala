@@ -446,7 +446,7 @@ class BeverageBanditsTest extends FunSuite with BeforeAndAfter {
     val initAll = BeverageBandits.parseCreatures(input).map(c => c.copy(hp = 6))
 
     //when
-    val (numberOfRounds, totalHP, winner) = BeverageBandits.playWar(map)(initAll)
+    val (numberOfRounds, totalHP, winner, _) = BeverageBandits.playWar(map)(initAll)
 
     //then
     assert(numberOfRounds == 4)
@@ -468,7 +468,7 @@ class BeverageBanditsTest extends FunSuite with BeforeAndAfter {
     )
 
     //when
-    val (numberOfRounds, totalHP, winner) = BeverageBandits.runSimulation(input)
+    val (numberOfRounds, totalHP, winner, _) = BeverageBandits.runSimulation(input)
 
     //then
     assert(numberOfRounds == 37)
@@ -489,7 +489,7 @@ class BeverageBanditsTest extends FunSuite with BeforeAndAfter {
     )
 
     //when
-    val (numberOfRounds, totalHP, winner) = BeverageBandits.runSimulation(input)
+    val (numberOfRounds, totalHP, winner, _) = BeverageBandits.runSimulation(input)
 
     //then
     assert(numberOfRounds == 46)
@@ -510,7 +510,7 @@ class BeverageBanditsTest extends FunSuite with BeforeAndAfter {
     )
 
     //when
-    val (numberOfRounds, totalHP, winner) = BeverageBandits.runSimulation(input)
+    val (numberOfRounds, totalHP, winner, _) = BeverageBandits.runSimulation(input)
 
     //then
     assert(numberOfRounds == 35)
@@ -531,7 +531,7 @@ class BeverageBanditsTest extends FunSuite with BeforeAndAfter {
     )
 
     //when
-    val (numberOfRounds, totalHP, winner) = BeverageBandits.runSimulation(input)
+    val (numberOfRounds, totalHP, winner, _) = BeverageBandits.runSimulation(input)
 
     //then
     assert(numberOfRounds == 54)
@@ -554,7 +554,7 @@ class BeverageBanditsTest extends FunSuite with BeforeAndAfter {
     )
 
     //when
-    val (numberOfRounds, totalHP, winner) = BeverageBandits.runSimulation(input)
+    val (numberOfRounds, totalHP, winner, _) = BeverageBandits.runSimulation(input)
 
     //then
     assert(numberOfRounds == 20)
@@ -615,12 +615,124 @@ class BeverageBanditsTest extends FunSuite with BeforeAndAfter {
     val input = InputLoader.loadLines("day15-input")
 
     //when
-    val (numberOfRounds, totalHP, winner) = BeverageBandits.runSimulation(input)
+    val (numberOfRounds, totalHP, winner, _) = BeverageBandits.runSimulation(input)
 
     //then
     assert(numberOfRounds == 76)
     assert(totalHP == 2656)
     assert(winner == CreatureType.Goblin)
+  }
+
+  test("should find winning power for example1") {
+    //given
+    val input = List(
+      "#######",
+      "#.G...#",
+      "#...EG#",
+      "#.#.#G#",
+      "#..G#E#",
+      "#.....#",
+      "#######"
+    )
+
+    //when
+    val (numberOfRounds, totalHP, winningArmy, elvesPower) = BeverageBandits.simulateNoElfCasualties(input)
+
+    //then
+    assert(numberOfRounds == 29)
+    assert(totalHP == 172)
+    assert(winningArmy == CreatureType.Elf)
+    assert(elvesPower == 15)
+  }
+
+  test("should find winning power for example2") {
+    //given
+    val input = List(
+      "#######",
+      "#E..EG#",
+      "#.#G.E#",
+      "#E.##E#",
+      "#G..#.#",
+      "#..E#.#",
+      "#######"
+    )
+
+    //when
+    val (numberOfRounds, totalHP, winningArmy, elvesPower) = BeverageBandits.simulateNoElfCasualties(input)
+
+    //then
+    assert(numberOfRounds == 33)
+    assert(totalHP == 948)
+    assert(winningArmy == CreatureType.Elf)
+    assert(elvesPower == 4)
+  }
+
+  test("should find winning power for example3") {
+    //given
+    val input = List(
+      "#######",
+      "#E.G#.#",
+      "#.#G..#",
+      "#G.#.G#",
+      "#G..#.#",
+      "#...E.#",
+      "#######"
+    )
+
+    //when
+    val (numberOfRounds, totalHP, winningArmy, elvesPower) = BeverageBandits.simulateNoElfCasualties(input)
+
+    //then
+    assert(numberOfRounds == 37)
+    assert(totalHP == 94)
+    assert(winningArmy == CreatureType.Elf)
+    assert(elvesPower == 15)
+  }
+
+  test("should find winning power for example4") {
+    //given
+    val input = List(
+      "#######",
+      "#.E...#",
+      "#.#..G#",
+      "#.###.#",
+      "#E#G#G#",
+      "#...#G#",
+      "#######"
+    )
+
+    //when
+    val (numberOfRounds, totalHP, winningArmy, elvesPower) = BeverageBandits.simulateNoElfCasualties(input)
+
+    //then
+    assert(numberOfRounds == 39)
+    assert(totalHP == 166)
+    assert(winningArmy == CreatureType.Elf)
+    assert(elvesPower == 12)
+  }
+
+  test("should find winning power for example5") {
+    //given
+    val input = List(
+      "#########",
+      "#G......#",
+      "#.E.#...#",
+      "#..##..G#",
+      "#...##..#",
+      "#...#...#",
+      "#.G...G.#",
+      "#.....G.#",
+      "#########"
+    )
+
+    //when
+    val (numberOfRounds, totalHP, winningArmy, elvesPower) = BeverageBandits.simulateNoElfCasualties(input)
+
+    //then
+    assert(numberOfRounds == 30)
+    assert(totalHP == 38)
+    assert(winningArmy == CreatureType.Elf)
+    assert(elvesPower == 34)
   }
 
 }

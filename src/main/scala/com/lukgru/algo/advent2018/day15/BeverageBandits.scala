@@ -19,7 +19,7 @@ object BeverageBandits {
   }
 
   case class Creature(id: String, pos: Position, cType: CreatureType, hp: Int = 200, attackPower: Int = 3) {
-    override def toString: String = s"$cType($id, (${pos.x},${pos.y}), $hp)"
+    override def toString: String = s"$cType($id, (${pos.x},${pos.y}), $hp, $attackPower)"
   }
 
   def parseCaveMap(lines: List[String]): Set[Position] =
@@ -30,17 +30,24 @@ object BeverageBandits {
           .map { case (_, x) => Position(x, y) }
       }.toSet
 
-  def parseCreatures(lines: List[String]): List[Creature] = {
+  def parseCreatures(lines: List[String], elvesPower: Int = 3): List[Creature] = {
     def cType(c: Char): CreatureType = c match {
       case 'E' => CreatureType.Elf
       case 'G' => CreatureType.Goblin
+    }
+
+    def power(creatureType: CreatureType): Int = creatureType match {
+      case CreatureType.Goblin => 3
+      case CreatureType.Elf => elvesPower
     }
 
     lines.map(_.zipWithIndex)
       .zipWithIndex
       .flatMap { case (xs, y) =>
         xs.filter { case (c, _) => c == 'G' || c == 'E' }
-          .map { case (c, x) => Creature(s"$x $y", Position(x, y), cType(c)) }
+          .map { case (c, x) =>
+            val race = cType(c)
+            Creature(s"$x $y", Position(x, y), race, attackPower = power(race)) }
       }
   }
 
@@ -170,7 +177,7 @@ object BeverageBandits {
 
   def isWarOver(allCreatures: List[Creature]): Boolean = allCreatures.groupBy(_.cType).size == 1
 
-  def playWar(map: Set[Position])(creatures: List[Creature]): (Int, Int, CreatureType) = {
+  def playWar(map: Set[Position])(creatures: List[Creature]): (Int, Int, CreatureType, List[Creature]) = {
     var currentCreatures = creatures
     var roundNo = 0
     while (!isWarOver(currentCreatures)) {
@@ -180,16 +187,17 @@ object BeverageBandits {
     }
     val sumOfHp = currentCreatures.map(_.hp).sum
     val winnerRace = currentCreatures.head.cType
-    (roundNo - 1, sumOfHp, winnerRace)
+    val creaturesLeft = currentCreatures
+    (roundNo - 1, sumOfHp, winnerRace, creaturesLeft)
   }
 
-  def runSimulation(input: List[String]): (Int, Int, CreatureType) = {
+  def runSimulation(input: List[String], elvesPower: Int = 3): (Int, Int, CreatureType, List[Creature]) = {
     val map = parseCaveMap(input)
-    val creatures = sortByPosition(parseCreatures(input))
+    val creatures = sortByPosition(parseCreatures(input, elvesPower))
     playWar(map)(creatures)
   }
 
-  def printState(map: Set[Position])(creatures: List[Creature]): Unit = {
+  def printState(map: Set[Position])(creatures: List[Creature]): Unit =
     if (printingOn) {
       val width = map.map(_.x).max
       val height = map.map(_.y).max
@@ -210,19 +218,31 @@ object BeverageBandits {
       }
       println(sb.mkString)
     }
-  }
 
-  def printOutcome(numberOfFullRounds: Int, totalHPLeft: Int, winningArmy: CreatureType): Unit = {
+  def printOutcome(numberOfFullRounds: Int, totalHPLeft: Int, winningArmy: CreatureType): Unit =
     println(s"Combat ends after $numberOfFullRounds rounds.\n" +
       s"${winningArmy}s win with $totalHPLeft total hit points left.\n" +
       s"Outcome: $numberOfFullRounds * $totalHPLeft = ${numberOfFullRounds * totalHPLeft}"
     )
+
+  def simulateNoElfCasualties(input: List[String]): (Int, Int, CreatureType, Int) = {
+    def countElves(creatures: List[Creature]): Int = creatures.count(_.cType == CreatureType.Elf)
+    val initElvesCount = countElves(parseCreatures(input))
+    Stream.from(0)
+      .map(elvesPower => (elvesPower, runSimulation(input, elvesPower)))
+      .find { case (_, (_, _, _, winningArmyState)) => countElves(winningArmyState) == initElvesCount }
+      .map { case (power, (numberOfRounds, totalHP, winningArmy, _)) => (numberOfRounds, totalHP, winningArmy, power)}
+      .get
   }
 
   def main(args: Array[String]): Unit = {
     val input = InputLoader.loadLines("day15-input")
-    val (numberOfFullRounds, totalHPLeft, winningArmy) = runSimulation(input)
+    val (numberOfFullRounds, totalHPLeft, winningArmy, _) = runSimulation(input)
     printOutcome(numberOfFullRounds, totalHPLeft, winningArmy)
+
+    val (numberOfFullRounds2, totalHPLeft2, winningArmy2, elvesPower) = simulateNoElfCasualties(input)
+    printOutcome(numberOfFullRounds2, totalHPLeft2, winningArmy2)
+    println(s"${winningArmy2}s should have at least $elvesPower power to win without any casualties")
   }
 
 }
