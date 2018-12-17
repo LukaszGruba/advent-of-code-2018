@@ -259,4 +259,16 @@ class ChronalClassificationTest extends FunSuite {
     //then
     assert(numberOfScenariosWith3OrMoreMatches == 493)
   }
+
+  test("should solve part 2") {
+    //given
+    val trainingData = InputLoader.loadLines("day16-input1")
+    val program = InputLoader.loadLines("day16-input2")
+
+    //when
+    val programResult = solvePart2(allInstructions)(trainingData)(program)
+
+    //then
+    assert(programResult == 445)
+  }
 }
