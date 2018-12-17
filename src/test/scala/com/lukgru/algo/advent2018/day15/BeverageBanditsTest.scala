@@ -239,7 +239,7 @@ class BeverageBanditsTest extends FunSuite with BeforeAndAfter {
     assert(enemyPathOpt.isDefined)
     val (nearestEnemyPosition, shortestPath) = enemyPathOpt.get
     assert(nearestEnemyPosition == p(5, 5))
-    assert(shortestPath == List(p(1, 1), p(2, 1), p(3, 1), p(3, 2), p(3, 3), p(3, 4), p(2, 4), p(2, 5), p(1, 5)))
+    assert(shortestPath == List(p(1,1), p(2,1), p(3,1), p(4,1), p(5,1), p(5,2), p(5,3), p(5,4), p(5,5)))
   }
 
   test("should attack nearest enemy") {
@@ -328,11 +328,11 @@ class BeverageBanditsTest extends FunSuite with BeforeAndAfter {
     val initAll = BeverageBandits.parseCreatures(input).map(c => c.copy(hp = 6))
 
     //when
-    val all1 = BeverageBandits.playRound(map)(initAll)
-    val all2 = BeverageBandits.playRound(map)(all1)
-    val all3 = BeverageBandits.playRound(map)(all2)
-    val all4 = BeverageBandits.playRound(map)(all3)
-    val all5 = BeverageBandits.playRound(map)(all4)
+    val (all1, _) = BeverageBandits.playRound(map)(initAll)
+    val (all2, _) = BeverageBandits.playRound(map)(all1)
+    val (all3, _) = BeverageBandits.playRound(map)(all2)
+    val (all4, _) = BeverageBandits.playRound(map)(all3)
+    val (all5, _) = BeverageBandits.playRound(map)(all4)
 
     BeverageBandits.printState(map)(initAll)
     BeverageBandits.printState(map)(all1)
@@ -449,7 +449,7 @@ class BeverageBanditsTest extends FunSuite with BeforeAndAfter {
     val (numberOfRounds, totalHP, winner, _) = BeverageBandits.playWar(map)(initAll)
 
     //then
-    assert(numberOfRounds == 4)
+    assert(numberOfRounds == 5)
     assert(totalHP == 6)
     assert(winner == CreatureType.Elf)
 

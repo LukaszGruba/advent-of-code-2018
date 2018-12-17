@@ -164,15 +164,19 @@ object BeverageBandits {
         (creatureAfterMove, creaturesAfterAttack :+ creatureAfterMove)
     }
 
-  def playRound(map: Set[Position])(allCreatures: List[Creature]): List[Creature] = {
+  def playRound(map: Set[Position])(allCreatures: List[Creature]): (List[Creature], Boolean) = {
     val sorted = sortByPosition(allCreatures)
-    val afterRound = sorted.foldLeft(sorted) {
-      case (creatures, currentCreature) =>
+    val (afterRound, lastTurnEndedWithKill) = sorted.foldLeft((sorted, false)) {
+      case ((creatures, lastOneKilled), currentCreature) =>
         creatures.find(_.id == currentCreature.id)
-          .map(takeTurn(map)(_, creatures)._2)
-          .getOrElse(creatures)
+          .map { attacker =>
+            val creaturesAfterTurn = takeTurn(map)(attacker, creatures)._2
+            val didIKill = creaturesAfterTurn.length < creatures.length
+            (creaturesAfterTurn, didIKill)
+          }
+          .getOrElse((creatures, lastOneKilled))
     }
-    sortByPosition(afterRound)
+    (sortByPosition(afterRound), lastTurnEndedWithKill)
   }
 
   def isWarOver(allCreatures: List[Creature]): Boolean = allCreatures.groupBy(_.cType).size == 1
@@ -180,15 +184,19 @@ object BeverageBandits {
   def playWar(map: Set[Position])(creatures: List[Creature]): (Int, Int, CreatureType, List[Creature]) = {
     var currentCreatures = creatures
     var roundNo = 0
+    var lastRoundEndedWithKill = false
     while (!isWarOver(currentCreatures)) {
-      currentCreatures = playRound(map)(currentCreatures)
+      val (afterRound, lastTurnWithKill) = playRound(map)(currentCreatures)
+      currentCreatures = afterRound
+      lastRoundEndedWithKill = lastTurnWithKill
       roundNo += 1
       printState(map)(currentCreatures)
     }
     val sumOfHp = currentCreatures.map(_.hp).sum
     val winnerRace = currentCreatures.head.cType
     val creaturesLeft = currentCreatures
-    (roundNo - 1, sumOfHp, winnerRace, creaturesLeft)
+    val numberOfFullRounds = if (lastRoundEndedWithKill) roundNo else roundNo - 1
+    (numberOfFullRounds, sumOfHp, winnerRace, creaturesLeft)
   }
 
   def runSimulation(input: List[String], elvesPower: Int = 3): (Int, Int, CreatureType, List[Creature]) = {
