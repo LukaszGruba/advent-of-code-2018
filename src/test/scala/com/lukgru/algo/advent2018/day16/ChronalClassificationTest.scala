@@ -1,6 +1,7 @@
 package com.lukgru.algo.advent2018.day16
 
 import com.lukgru.algo.advent2018.day16.ChronalClassification._
+import com.lukgru.algo.advent2018.utils.InputLoader
 import org.scalatest.FunSuite
 
 class ChronalClassificationTest extends FunSuite {
@@ -185,12 +186,77 @@ class ChronalClassificationTest extends FunSuite {
     //given
     val before = regs(3, 2, 1, 1)
     val after = regs(3, 2, 2, 1)
+    val scenario = Scenario(11, List(2, 1, 2), before, after)
 
     //when
-    val matching = getMatchingInstructions(allInstructions)(2, 1, 2)(before, after)
+    val matching = getMatchingInstructions(allInstructions)(scenario)
 
     //then
     assert(matching.map(_.opcode) == Set("mulr", "addi", "seti"))
   }
 
+  test("should parse single scenario") {
+    //given
+    val input = List(
+      "Before: [3, 2, 1, 1]",
+      "9 2 1 2",
+      "After:  [3, 2, 2, 1]"
+    )
+
+    //when
+    val scenario = parseScenario(input)
+
+    //then
+    assert(scenario.insNo == 9)
+    assert(scenario.args == List(2, 1, 2))
+    assert(scenario.before == regs(3, 2, 1, 1))
+    assert(scenario.after == regs(3, 2, 2, 1))
+  }
+
+  test("should parse few scenarios from input") {
+    //given
+    val input = List(
+      "Before: [3, 0, 1, 3]",
+      "15 2 1 3",
+      "After:  [3, 0, 1, 1]",
+      "",
+      "Before: [1, 3, 2, 0]",
+      "11 2 2 0",
+      "After:  [4, 3, 2, 0]",
+      "",
+      "Before: [0, 3, 3, 1]",
+      "14 3 2 0",
+      "After:  [3, 3, 3, 1]"
+    )
+
+    //when
+    val scenarios = parseScenarios(input)
+
+    //then
+    assert(scenarios.head.insNo == 15)
+    assert(scenarios.head.args == List(2, 1, 3))
+    assert(scenarios.head.before == regs(3, 0, 1, 3))
+    assert(scenarios.head.after == regs(3, 0, 1, 1))
+
+    assert(scenarios(1).insNo == 11)
+    assert(scenarios(1).args == List(2, 2, 0))
+    assert(scenarios(1).before == regs(1, 3, 2, 0))
+    assert(scenarios(1).after == regs(4, 3, 2, 0))
+
+    assert(scenarios(2).insNo == 14)
+    assert(scenarios(2).args == List(3, 2, 0))
+    assert(scenarios(2).before == regs(0, 3, 3, 1))
+    assert(scenarios(2).after == regs(3, 3, 3, 1))
+  }
+
+  test("should solve part 1") {
+    //given
+    val input = InputLoader.loadLines("day16-input1")
+
+    //when
+    val numberOfScenariosWith3OrMoreMatches = countNOrMoreBehaviours(allInstructions)(3)(input)
+
+    //then
+    assert(numberOfScenariosWith3OrMoreMatches == 493)
+  }
 }

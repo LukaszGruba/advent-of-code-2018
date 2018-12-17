@@ -58,7 +58,7 @@ object ChronalClassification {
   def eqrr(a: Int, b: Int, c: Int, reg: List[Register]): List[Register] =
     reg.updated(c, reg(c).copy(value = if (reg(a).value == reg(b).value) 1 else 0))
 
-  val allInstructions = Set(
+  val allInstructions: Set[Instruction] = Set(
     Instruction("addr", addr),
     Instruction("addi", addi),
     Instruction("mulr", mulr),
@@ -81,17 +81,44 @@ object ChronalClassification {
     List(Register(0, a), Register(1, b), Register(2, c), Register(3, d))
   }
 
-  def getMatchingInstructions(instructions: Set[Instruction])
-                             (a: Int, b: Int, c: Int)
-                             (before: List[Register], after: List[Register]): Set[Instruction] = {
+  def getMatchingInstructions(instructions: Set[Instruction])(s: Scenario): Set[Instruction] = {
+    val (a, b, c) = (s.args.head, s.args(1), s.args(2))
     instructions.filter { instruction =>
-      instruction.op(a, b, c, before) == after
+      instruction.op(a, b, c, s.before) == s.after
     }
   }
 
-  def parseScenario(scenario: List[String]): Scenario = ???
+  def parseScenario(scenario: List[String]): Scenario = {
+    def parseRegister(s: String): List[Register] = {
+      val registerPattern = "(\\d*), (\\d*), (\\d*), (\\d*)".r
+      val registerPattern(r1, r2, r3, r4) = s
+      regs(r1.toInt, r2.toInt, r3.toInt, r4.toInt)
+    }
 
-  def countNOrMoreBehaviours(instructions: Set[Instruction])(n: Int)(lines: List[String]): Int = ???
+    val beforePattern = "Before: \\[(.*)\\]".r
+    val instrPattern = "(\\d*) (\\d*) (\\d*) (\\d*)".r
+    val afterPattern = "After:  \\[(.*)\\]".r
+
+    val beforePattern(beforeStr) = scenario.head
+    val instrPattern(insNo, a, b, c) = scenario(1)
+    val afterPattern(afterStr) = scenario(2)
+
+    val args = List(a.toInt, b.toInt, c.toInt)
+    val before = parseRegister(beforeStr)
+    val after = parseRegister(afterStr)
+    Scenario(insNo.toInt, args, before, after)
+  }
+
+  def parseScenarios(lines: List[String]): List[Scenario] =
+    lines.grouped(4)
+      .map(parseScenario)
+      .toList
+
+  def countNOrMoreBehaviours(instructions: Set[Instruction])(n: Int)(lines: List[String]): Int = {
+    val scenarios = parseScenarios(lines)
+    scenarios.map(getMatchingInstructions(instructions))
+      .count(matchingPerScenario => matchingPerScenario.size >= n)
+  }
 
   def main(args: Array[String]): Unit = {
     val input = InputLoader.loadLines("day16-input1")
