@@ -238,7 +238,7 @@ class BeverageBanditsTest extends FunSuite with BeforeAndAfter {
     //then
     assert(enemyPathOpt.isDefined)
     val (nearestEnemyPosition, shortestPath) = enemyPathOpt.get
-    assert(nearestEnemyPosition == p(1, 5))
+    assert(nearestEnemyPosition == p(5, 5))
     assert(shortestPath == List(p(1, 1), p(2, 1), p(3, 1), p(3, 2), p(3, 3), p(3, 4), p(2, 4), p(2, 5), p(1, 5)))
   }
 
@@ -733,6 +733,40 @@ class BeverageBanditsTest extends FunSuite with BeforeAndAfter {
     assert(totalHP == 38)
     assert(winningArmy == CreatureType.Elf)
     assert(elvesPower == 34)
+  }
+
+  test("given more than one shortest path exist, should choose the one which ends better in reading order") {
+    //given
+    val input = List(
+      "########################",
+      "#G##################...#",
+      "#...........E........#G#",
+      "########################"
+    )
+    val map = BeverageBandits.parseCaveMap(input)
+    val allCreatures = BeverageBandits.parseCreatures(input)
+    val attacker = allCreatures.find(_.cType == CreatureType.Elf).get
+
+    //when
+    val (enemyPosition, path) = BeverageBandits.findPathToNearestEnemy(map)(attacker, allCreatures).get
+
+    //then
+    assert(enemyPosition == Position(22, 2))
+    assert(path == List(p(12, 2), p(13, 2), p(14, 2), p(15, 2), p(16, 2), p(17, 2), p(18, 2), p(19, 2), p(20, 2), p(20, 1), p(21, 1), p(22, 1), p(22, 2)))
+  }
+
+  test("should solve part 2") {
+    //given
+    val input = InputLoader.loadLines("day15-input")
+
+    //when
+    val (numberOfRounds, totalHP, winningArmy, elvesPower) = BeverageBandits.simulateNoElfCasualties(input)
+
+    //then
+    assert(numberOfRounds == 47)
+    assert(totalHP == 1022)
+    assert(winningArmy == CreatureType.Elf)
+    assert(elvesPower == 12)
   }
 
 }

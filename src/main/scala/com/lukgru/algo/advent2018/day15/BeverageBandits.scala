@@ -130,7 +130,7 @@ object BeverageBandits {
     paths match {
       case Nil => None
       case _ =>
-        val (nearestEnemy, shortestPath) = paths.minBy { case (enemy, path) => (path.length, enemy.pos.y, enemy.pos.x) }
+        val (nearestEnemy, shortestPath) = paths.minBy { case (enemy, path) => (path.length, path(path.length - 2).y, path(path.length - 2).x) }
         Some(nearestEnemy.pos, shortestPath)
     }
   }
