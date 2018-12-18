@@ -71,12 +71,15 @@ object SettlersOfTheNorthPole {
     }
   }
 
+  def findValueCycle(map: Map[Position, State]): Int = ???
+
+  def calcValue(state: Map[Position, State]): Int = {
+    val woodenAcres = state.values.count(State.Tree.==)
+    val lumberyards = state.values.count(State.Lumberyard.==)
+    woodenAcres * lumberyards
+  }
+
   def solveAfterNMinutes(n: Int)(lines: List[String]): Int = {
-    def calcValue(state: Map[Position, State]): Int = {
-      val woodenAcres = state.values.count(State.Tree.==)
-      val lumberyards = state.values.count(State.Lumberyard.==)
-      woodenAcres * lumberyards
-    }
     val initState = parseInput(lines)
     val finalState =
       (1 to n).foldLeft(initState) {
