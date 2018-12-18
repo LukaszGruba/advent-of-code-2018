@@ -21,7 +21,7 @@ class SettlersOfTheNorthPoleTest extends FunSuite {
     )
 
     //when
-    val solution = SettlersOfTheNorthPole.solvePart1(input)
+    val solution = SettlersOfTheNorthPole.solveAfterNMinutes(10)(input)
 
     //then
     assert(solution == 1147)
@@ -32,10 +32,21 @@ class SettlersOfTheNorthPoleTest extends FunSuite {
     val input = InputLoader.loadLines("day18-input")
 
     //when
-    val solution = SettlersOfTheNorthPole.solvePart1(input)
+    val solution = SettlersOfTheNorthPole.solveAfterNMinutes(10)(input)
 
     //then
     assert(solution == 480150)
+  }
+
+  test("should solve part 2") {
+    //given
+    val input = InputLoader.loadLines("day18-input")
+
+    //when
+    val solution = SettlersOfTheNorthPole.solveAfterNMinutes(1000000000)(input)
+
+    //then
+    assert(solution == 233020)
   }
 
 }

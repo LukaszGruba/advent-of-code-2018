@@ -5,6 +5,8 @@ import com.lukgru.algo.advent2018.utils.InputLoader
 
 object SettlersOfTheNorthPole {
 
+  val printingEnabled: Boolean = false
+
   object State extends Enumeration {
     type State = Value
     val Ground, Tree, Lumberyard = Value
@@ -25,23 +27,25 @@ object SettlersOfTheNorthPole {
       .toMap
 
   def printMap(map: Map[Position, State]): Unit = {
-    def formatState(s: State): Char = s match {
-      case State.Ground => '.'
-      case State.Tree => '|'
-      case State.Lumberyard => '#'
-    }
-
-    val xMax = map.keys.map(_.x).max
-    val yMax = map.keys.map(_.y).max
-    val sb = new StringBuilder
-    for (y <- 0 to yMax) {
-      for (x <- 0 to xMax) {
-        val state = map(Position(x, y))
-        sb.append(formatState(state))
+    if (printingEnabled) {
+      def formatState(s: State): Char = s match {
+        case State.Ground => '.'
+        case State.Tree => '|'
+        case State.Lumberyard => '#'
       }
-      sb.append('\n')
+
+      val xMax = map.keys.map(_.x).max
+      val yMax = map.keys.map(_.y).max
+      val sb = new StringBuilder
+      for (y <- 0 to yMax) {
+        for (x <- 0 to xMax) {
+          val state = map(Position(x, y))
+          sb.append(formatState(state))
+        }
+        sb.append('\n')
+      }
+      println(sb.mkString)
     }
-    println(sb.mkString)
   }
 
   def evolveAreaState(state: State, surroundings: List[State]): State = state match {
@@ -67,25 +71,32 @@ object SettlersOfTheNorthPole {
     }
   }
 
-  def solvePart1(lines: List[String]): Int = {
+  def solveAfterNMinutes(n: Int)(lines: List[String]): Int = {
+    def calcValue(state: Map[Position, State]): Int = {
+      val woodenAcres = state.values.count(State.Tree.==)
+      val lumberyards = state.values.count(State.Lumberyard.==)
+      woodenAcres * lumberyards
+    }
     val initState = parseInput(lines)
     val finalState =
-      (1 to 10).foldLeft(initState) {
-        (prevState, _) => {
+      (1 to n).foldLeft(initState) {
+        (prevState, i) => {
           val newState = evolve(prevState)
           printMap(newState)
+          println(s"i: $i\tvalue: ${calcValue(newState)}")
           newState
         }
       }
-    val woodenAcres = finalState.values.count(State.Tree.==)
-    val lumberyards = finalState.values.count(State.Lumberyard.==)
-    woodenAcres * lumberyards
+    calcValue(finalState)
   }
 
   def main(args: Array[String]): Unit = {
     val input = InputLoader.loadLines("day18-input")
-    val solution1 = solvePart1(input)
+    val solution1 = solveAfterNMinutes(10)(input)
     println(solution1)
+
+    val solution2 = solveAfterNMinutes(1000000000)(input)
+    println(solution2)
   }
 
 }
