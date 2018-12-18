@@ -156,7 +156,7 @@ object ReservoirResearch {
     water.keys.map(_.y).exists(bottom.<=)
   }
 
-  def solvePart1(springX: Int)(lines: List[String]): Int = {
+  def solve(springX: Int)(lines: List[String]): (Int, Int) = {
     val clay = parseClay(lines)
     var water = Map(Position(springX, 0) -> Water(Position(springX, 0), WaterState.Flowing))
     var i = 0
@@ -170,13 +170,14 @@ object ReservoirResearch {
       println(i)
     }
     printState(water, clay)
-    water.count { case (p, _) => p.y >= top }
+    (water.count { case (p, _) => p.y >= top }, water.count { case (_, w) => w.state == WaterState.Still})
   }
 
   def main(args: Array[String]): Unit = {
     val input = InputLoader.loadLines("day17-input")
-    val numberOfReachedTiles = solvePart1(500)(input)
+    val (numberOfReachedTiles, numberOfStillWater) = solve(500)(input)
     println(numberOfReachedTiles)
+    println(numberOfStillWater)
   }
 
 }
