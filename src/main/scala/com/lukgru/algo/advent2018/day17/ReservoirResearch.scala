@@ -3,7 +3,7 @@ package com.lukgru.algo.advent2018.day17
 import com.lukgru.algo.advent2018.day17.ReservoirResearch.WaterState.WaterState
 import com.lukgru.algo.advent2018.utils.InputLoader
 
-import scala.collection.mutable
+import scala.collection.parallel.ParMap
 
 object ReservoirResearch {
 
@@ -40,7 +40,7 @@ object ReservoirResearch {
     lines.flatMap(parseLine).toSet
   }
 
-  def printState(water: Map[Position, Water], clay: Set[Position]): Unit = {
+  def printState(water: ParMap[Position, Water], clay: Set[Position]): Unit = {
     val allPositions = water.map(_._2.pos) ++ clay
     val xMin = allPositions.map(_.x).min
     val xMax = allPositions.map(_.x).max
@@ -68,20 +68,20 @@ object ReservoirResearch {
 
   private def getPosBelow(p: Position): Position = p.copy(y = p.y + 1)
 
-  def isEndOfStream(w: Water, allTheWater: Map[Position, Water], clay: Set[Position]): Boolean = {
+  def isEndOfStream(w: Water, allTheWater: ParMap[Position, Water], clay: Set[Position]): Boolean = {
     val posBelow = getPosBelow(w.pos)
     w.state == WaterState.Flowing && !allTheWater.contains(posBelow) && !clay.contains(posBelow)
   }
 
-  def isInTheStream(w: Water, water: Map[Position, Water], clay: Set[Position]): Boolean =
+  def isInTheStream(w: Water, water: ParMap[Position, Water], clay: Set[Position]): Boolean =
     w.state == WaterState.Flowing && water.get(getPosBelow(w.pos)).exists(_.state == WaterState.Flowing)
 
-  def didHitStillElement(w: Water, water: Map[Position, Water], clay: Set[Position]): Boolean = {
+  def didHitStillElement(w: Water, water: ParMap[Position, Water], clay: Set[Position]): Boolean = {
     val posBelow = getPosBelow(w.pos)
     w.state == WaterState.Flowing && (water.get(posBelow).exists(_.state == WaterState.Still) || clay.contains(posBelow))
   }
 
-  def expandWater(w: Water, water: Map[Position, Water], clay: Set[Position]): Set[Water] = {
+  def expandWater(w: Water, water: ParMap[Position, Water], clay: Set[Position]): Set[Water] = {
     def restrictedFromLeft(ws: Stream[Water]): Boolean = {
       val leftMost = ws.map(_.pos).minBy(_.x)
       clay.contains(leftMost.copy(x = leftMost.x - 1))
@@ -129,36 +129,25 @@ object ReservoirResearch {
     }
   }
 
-  //TODO: use water el -> many water els and flatmap to achieve immutability
-  def tick(water: Map[Position, Water], clay: Set[Position]): Map[Position, Water] = {
-    val newWater = mutable.Map.empty[Position, Water]
-    water.foreach { case (p, w) =>
+  def tick(water: ParMap[Position, Water], clay: Set[Position]): ParMap[Position, Water] =
+    water.flatMap { case (p, w) =>
       w.state match {
-        case WaterState.Still => newWater.put(p, w)
+        case WaterState.Still => List((p, w))
         case WaterState.Flowing =>
           if (isEndOfStream(w, water, clay)) {
-            newWater.put(p, w)
             val below = getPosBelow(p)
-            newWater.put(below, w.copy(pos = below))
+            List((p, w), (below, w.copy(pos = below)))
           } else if (isInTheStream(w, water, clay)) {
-            newWater.put(p, w)
+            List((p, w))
           } else if (didHitStillElement(w, water, clay)) {
-            expandWater(w, water, clay)
-              .foreach(newW => newWater.put(newW.pos, newW))
-          }
+            expandWater(w, water, clay).map(newW => (newW.pos, newW)).toList
+          } else List.empty
       }
     }
-    newWater.toMap
-  }
-
-  def reachedEnd(water: Map[Position, Water], clay: Set[Position]): Boolean = {
-    val bottom = clay.map(_.y).max
-    water.keys.map(_.y).exists(bottom.<=)
-  }
 
   def solve(springX: Int)(lines: List[String]): (Int, Int) = {
     val clay = parseClay(lines)
-    var water = Map(Position(springX, 0) -> Water(Position(springX, 0), WaterState.Flowing))
+    var water = ParMap(Position(springX, 0) -> Water(Position(springX, 0), WaterState.Flowing))
     var i = 0
     var lastWaterSize = 0
     val top = clay.map(_.y).min
@@ -170,7 +159,7 @@ object ReservoirResearch {
       println(i)
     }
     printState(water, clay)
-    (water.count { case (p, _) => p.y >= top }, water.count { case (_, w) => w.state == WaterState.Still})
+    (water.count { case (p, _) => p.y >= top }, water.count { case (_, w) => w.state == WaterState.Still })
   }
 
   def main(args: Array[String]): Unit = {
