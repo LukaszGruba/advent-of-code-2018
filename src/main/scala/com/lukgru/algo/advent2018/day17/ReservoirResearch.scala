@@ -129,7 +129,6 @@ object ReservoirResearch {
     }
   }
 
-  //TODO: use water el -> many water els and flatmap to achieve immutability
   def tick(water: ParMap[Position, Water], clay: Set[Position]): ParMap[Position, Water] =
     water.flatMap { case (p, w) =>
       w.state match {
