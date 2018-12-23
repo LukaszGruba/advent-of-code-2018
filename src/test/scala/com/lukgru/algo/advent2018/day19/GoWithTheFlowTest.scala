@@ -36,4 +36,8 @@ class GoWithTheFlowTest extends FunSuite {
     assert(result == 2520)
   }
 
+  test("should solve part 2") {
+    assert(GoWithTheFlow.solvePart2() == 27941760)
+  }
+
 }

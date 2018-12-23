@@ -6,7 +6,7 @@ object ChronalClassification {
 
   case class Scenario(insNo: Int, args: List[Int], before: List[Register], after: List[Register])
 
-  case class Register(id: Int, value: Int)
+  case class Register(id: Int, value: Long)
 
   case class Instruction(opcode: String, op: (Int, Int, Int, List[Register]) => List[Register])
 
@@ -164,7 +164,7 @@ object ChronalClassification {
         execute(prevState, instruction, List(exec.args._1, exec.args._2, exec.args._3))
     }
 
-  def solvePart2(instructions: Set[Instruction])(trainingData: List[String])(program: List[String]): Int = {
+  def solvePart2(instructions: Set[Instruction])(trainingData: List[String])(program: List[String]): Long = {
     val executionUnits = parseProgram(program)
     val scenarios = parseScenarios(trainingData)
     val mappedInstructions = learnInstructionMapping(instructions)(scenarios)
