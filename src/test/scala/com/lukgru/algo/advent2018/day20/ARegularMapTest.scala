@@ -1,6 +1,7 @@
 package com.lukgru.algo.advent2018.day20
 
 import com.lukgru.algo.advent2018.day20.ARegularMap.{p, parseRegMapPositions}
+import com.lukgru.algo.advent2018.utils.InputLoader
 import org.scalatest.FunSuite
 
 class ARegularMapTest extends FunSuite {
@@ -86,6 +87,17 @@ class ARegularMapTest extends FunSuite {
       p(-6, -5), p(-4, -5), p(2, -5), p(4, -5), p(6, -5),
       p(-3, -6), p(-1, -6), p(1, -6), p(5, -6)
     ))
+  }
+
+  test("should solve part 1") {
+    //given
+    val input = InputLoader.loadLines("day20-input").head
+
+    //when
+    val shortestPathLengthToMostDistantRoom = ARegularMap.findShortestPathLengthToMostDistantRoom(input)
+
+    //then
+    assert(shortestPathLengthToMostDistantRoom == 3788)
   }
 
 }

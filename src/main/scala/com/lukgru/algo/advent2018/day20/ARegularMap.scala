@@ -4,6 +4,7 @@ import com.lukgru.algo.advent2018.day20.ARegularMap.DoorOrientation.DoorOrientat
 import com.lukgru.algo.advent2018.utils.InputLoader
 
 import scala.annotation.tailrec
+import scala.collection.immutable.Queue
 
 object ARegularMap {
 
@@ -54,14 +55,61 @@ object ARegularMap {
     recParse(List.empty, Room(Position(0, 0)), raw.toList, RegMap(Set.empty, Set.empty))
   }
 
-  def solvePart1(regex: String): Int = {
+  def findAdjacentRooms(room: Room, regMap: RegMap): Set[Room] = {
+    def roomBehindTheDoor(door: Door): Room = door match {
+      case d if d.pos.y < room.pos.y => Room(Position(room.pos.x, room.pos.y - 2))
+      case d if d.pos.y > room.pos.y => Room(Position(room.pos.x, room.pos.y + 2))
+      case d if d.pos.x < room.pos.x => Room(Position(room.pos.x - 2, room.pos.y))
+      case d if d.pos.x > room.pos.x => Room(Position(room.pos.x + 2, room.pos.y))
+    }
+
+    val horizontalDoors = regMap.doors
+      .filter(_.orientation == DoorOrientation.Horizontal)
+      .filter { d =>
+        d.pos.x == room.pos.x && Math.abs(d.pos.y - room.pos.y) == 1
+      }
+    val verticalDoors = regMap.doors
+      .filter(_.orientation == DoorOrientation.Vertical)
+      .filter { d =>
+        Math.abs(d.pos.x - room.pos.x) == 1 && d.pos.y == room.pos.y
+      }
+    (horizontalDoors ++ verticalDoors).map(roomBehindTheDoor)
+  }
+
+  def constructRoomsMap(regMap: RegMap): Map[Room, List[Room]] = {
+
+    @tailrec
+    def constructMapRec(toVisit: Queue[(Room, List[Room])], map: Map[Room, List[Room]]): Map[Room, List[Room]] =
+      if (toVisit.isEmpty) map
+      else {
+        val ((room, pathToRoom), remainingRooms) = toVisit.dequeue
+        val newMap =
+          if (!map.contains(room)) {
+            map + (room -> pathToRoom)
+          } else {
+            map
+          }
+        val notVisitedAdjacentRooms = findAdjacentRooms(room, regMap)
+          .filterNot(r => map.contains(r))
+          .map(r => (r, pathToRoom :+ room))
+        val updatedToVisit = remainingRooms ++ notVisitedAdjacentRooms
+        constructMapRec(updatedToVisit, newMap)
+      }
+
+    constructMapRec(Queue((Room(Position(0, 0)), Nil)), Map.empty)
+  }
+
+  def findShortestPathLengthToMostDistantRoom(regex: String): Int = {
     val regMap = parseRegMapPositions(regex)
-    ???
+    val roomsWithPaths = constructRoomsMap(regMap)
+    roomsWithPaths.values
+      .map(path => path.length)
+      .max
   }
 
   def main(args: Array[String]): Unit = {
     val input = InputLoader.loadLines("day20-input").head
-    val solution1 = solvePart1(input)
+    val solution1 = findShortestPathLengthToMostDistantRoom(input)
     println(solution1)
   }
 
