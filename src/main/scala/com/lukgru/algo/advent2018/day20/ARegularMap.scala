@@ -77,7 +77,6 @@ object ARegularMap {
   }
 
   def constructRoomsMap(regMap: RegMap): Map[Room, List[Room]] = {
-
     @tailrec
     def constructMapRec(toVisit: Queue[(Room, List[Room])], map: Map[Room, List[Room]]): Map[Room, List[Room]] =
       if (toVisit.isEmpty) map
@@ -107,10 +106,19 @@ object ARegularMap {
       .max
   }
 
+  def countRoomsWithShortestPath(minPathLength: Int)(regex: String): Int = {
+    val regMap = parseRegMapPositions(regex)
+    val roomsWithPaths = constructRoomsMap(regMap)
+    roomsWithPaths.values.count(_.length >= minPathLength)
+  }
+
   def main(args: Array[String]): Unit = {
     val input = InputLoader.loadLines("day20-input").head
     val solution1 = findShortestPathLengthToMostDistantRoom(input)
     println(solution1)
+
+    val solution2 = countRoomsWithShortestPath(1000)(input)
+    println(solution2)
   }
 
 }

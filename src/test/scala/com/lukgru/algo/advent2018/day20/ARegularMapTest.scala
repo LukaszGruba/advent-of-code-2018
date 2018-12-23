@@ -100,4 +100,15 @@ class ARegularMapTest extends FunSuite {
     assert(shortestPathLengthToMostDistantRoom == 3788)
   }
 
+  test("should solve part 2") {
+    //given
+    val input = InputLoader.loadLines("day20-input").head
+
+    //when
+    val numberOfRoomsWithShortestPathAtLest1000 = ARegularMap.countRoomsWithShortestPath(1000)(input)
+
+    //then
+    assert(numberOfRoomsWithShortestPathAtLest1000 == 8568)
+  }
+
 }
