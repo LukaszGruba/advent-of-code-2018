@@ -54,7 +54,8 @@ object ModeMaze {
       cache.getOrElse(pos, {
         cache.update(pos, calcErosionLevel(pos))
         val erosionLevel = cache(pos)
-        println(s"cache updated with: ($pos, $erosionLevel)")
+        if (pos.y % 10 == 0) println(pos.y)
+//        println(s"cache updated with: ($pos, $erosionLevel)")
         erosionLevel
       })
   }
@@ -100,37 +101,59 @@ object ModeMaze {
     ).filter(p => p.x >= 0 && p.y >= 0)
   }
 
+  def allowedEquipment(pos: Position): List[Equipment] =
+    determineRegionType(calcErosionLevel(pos)) match {
+      case RegionType.Narrow => List(Equipment.Torch, Equipment.Neither)
+      case RegionType.Wet => List(Equipment.Neither, Equipment.ClimbingGear)
+      case RegionType.Rocky => List(Equipment.ClimbingGear, Equipment.Torch)
+    }
+
   def createNewPaths(current: TripState): Vector[TripState] = {
-    val adjacentPositions = adjacentPos(current.path.last)
+    val adjacentPositions = adjacentPos(current.path.last).filterNot(current.path.contains)
     val possibleMoves = for (pos <- adjacentPositions; possibleEq <- Equipment.values.toVector) yield (pos, possibleEq)
-    possibleMoves.map { case (newPos, eq) =>
-      val path = current.path :+ newPos
-      val time = if (eq != current.currentEquipment) {
-        current.time + 1 + changeCost
-      } else current.time + 1
-      TripState(time, path, eq)
-    }.toVector
+    possibleMoves
+      .filter { case (newPos, eq) => allowedEquipment(newPos).contains(eq) }
+      .map { case (newPos, eq) =>
+        val path = current.path :+ newPos
+        val time = if (eq != current.currentEquipment) {
+          current.time + 1 + changeCost
+        } else current.time + 1
+        TripState(time, path, eq)
+      }.toVector
+  }
+
+  def eliminateAndSort(tripStates: Vector[TripState]): Vector[TripState] = {
+    tripStates.groupBy(state => (state.path.last, state.currentEquipment))
+      .map { case (_, states) => states.minBy(_.time) }
+      .toVector
+      .sortBy(_.time)
   }
 
   @tailrec
   def findShortestTrip(tripStates: Vector[TripState]): TripState = {
-    if (tripStates.size % 1000 == 0) println(tripStates.size)
+//    if (tripStates.size % 1000 < 10) println(tripStates.size)
     val (head, tail) = (tripStates.head, tripStates.tail)
     if (head.path.last == targetPos) {
       if (head.currentEquipment == Equipment.Torch) head
       else {
         val newTail = TripState(head.time + changeCost, head.path, Equipment.Torch) +: tail
-        findShortestTrip(newTail.sortBy(_.time))
+        findShortestTrip(eliminateAndSort(newTail))
       }
     }
     else {
       val newPaths = createNewPaths(head)
-      val newTail = newPaths ++ tail
-      findShortestTrip(newTail.sortBy(_.time))
+      val newTail =
+        if (newPaths.isEmpty) tail
+        else newPaths ++ tail
+      findShortestTrip(eliminateAndSort(newTail))
     }
   }
 
-  def solvePart2(): Long = {
+  def solvePart2(depthP: Int, entrance: Position, target: Position): Long = {
+    this.depth = depthP
+    this.caveEntryPos = entrance
+    this.targetPos = target
+
     val TripState(time, _, _) = findShortestTrip(Vector(TripState(0, Vector(caveEntryPos), Equipment.Torch)))
     time
   }
@@ -143,7 +166,7 @@ object ModeMaze {
     val solution1 = solvePart1(depthP, caveEntryPosP, targetPosP)
     println(solution1)
 
-    val solution2 = solvePart2()
+    val solution2 = solvePart2(depthP, caveEntryPosP, targetPosP)
     println(solution2)
   }
 
