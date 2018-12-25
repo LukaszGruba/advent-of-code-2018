@@ -28,7 +28,7 @@ object ExperimentalEmergencyTeleportation {
   def findTheStrongestNanobot(allNanobots: Set[Nanobot]): Nanobot =
     allNanobots.maxBy(_.signalRadius)
 
-  def solvePart1(lines: List[String]): Int = {
+  def countNanobotsInRangeOfTheStrongestOne(lines: List[String]): Int = {
     val nanobots = parseNanobots(lines)
     val strongest = findTheStrongestNanobot(nanobots)
     val inRangeOfTheStrongest = getAllInRangeOf(nanobots)(strongest)
@@ -37,7 +37,7 @@ object ExperimentalEmergencyTeleportation {
 
   def main(args: Array[String]): Unit = {
     val input = InputLoader.loadLines("day23-input")
-    val solution1 = solvePart1(input)
+    val solution1 = countNanobotsInRangeOfTheStrongestOne(input)
     println(solution1)
   }
 }

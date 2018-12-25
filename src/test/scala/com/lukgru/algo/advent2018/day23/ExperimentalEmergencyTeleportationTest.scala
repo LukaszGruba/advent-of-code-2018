@@ -10,7 +10,7 @@ class ExperimentalEmergencyTeleportationTest extends FunSuite {
     val input = InputLoader.loadLines("day23-input")
 
     //when
-    val solution = ExperimentalEmergencyTeleportation.solvePart1(input)
+    val solution = ExperimentalEmergencyTeleportation.countNanobotsInRangeOfTheStrongestOne(input)
 
     //then
     assert(solution == 721)
