@@ -44,4 +44,17 @@ class ModeMazeTest extends FunSuite {
     assert(solution == 45)
   }
 
+  test("should solve part 2") {
+    //given
+    val depthP = 7740
+    val caveEntryPosP = Position(0, 0)
+    val targetPosP = Position(12, 763)
+
+    //when
+    val solution = ModeMaze.solvePart2(depthP, caveEntryPosP, targetPosP)
+
+    //then
+    assert(solution == 1051)
+  }
+
 }
