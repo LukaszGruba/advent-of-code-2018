@@ -10,7 +10,7 @@ class ImmuneSystemSimulator20XXTest extends FunSuite {
     val groupStr = "18 units each with 729 hit points (weak to fire; immune to cold, slashing) with an attack that does 8 radiation damage at initiative 10"
 
     //when
-    val group = ImmuneSystemSimulator20XX.parseGroup(123, groupStr)
+    val group = ImmuneSystemSimulator20XX.parseGroup(1)(123, groupStr)
 
     //then
     assert(group.groupId == 123)
@@ -43,5 +43,24 @@ class ImmuneSystemSimulator20XXTest extends FunSuite {
 
     assert(infectionArmy.groups.length == 2)
     assert(infectionArmy.groups.map(_.units.length).sum == 8818)
+  }
+
+  test("should solve part 1 for example") {
+    //given
+    val input = List(
+      "Immune System:",
+      "17 units each with 5390 hit points (weak to radiation, bludgeoning) with an attack that does 4507 fire damage at initiative 2",
+      "989 units each with 1274 hit points (immune to fire; weak to bludgeoning, slashing) with an attack that does 25 slashing damage at initiative 3",
+      "",
+      "Infection:",
+      "801 units each with 4706 hit points (weak to radiation) with an attack that does 116 bludgeoning damage at initiative 1",
+      "4485 units each with 2961 hit points (immune to radiation; weak to fire, cold) with an attack that does 12 slashing damage at initiative 4",
+    )
+
+    //when
+    val solution = ImmuneSystemSimulator20XX.solvePart1(input)
+
+    //then
+    assert(solution == 5216)
   }
 }

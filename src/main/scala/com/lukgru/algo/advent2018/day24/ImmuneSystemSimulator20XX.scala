@@ -2,6 +2,8 @@ package com.lukgru.algo.advent2018.day24
 
 import com.lukgru.algo.advent2018.utils.InputLoader
 
+import scala.annotation.tailrec
+
 object ImmuneSystemSimulator20XX {
 
   case class GroupUnit(hp: Int,
@@ -12,14 +14,14 @@ object ImmuneSystemSimulator20XX {
                        immunities: Set[String]
                       )
 
-  case class Group(groupId: Int, units: List[GroupUnit])
+  case class Group(armyId: Int, groupId: Int, units: List[GroupUnit])
 
-  case class Army(groups: List[Group])
+  case class Army(id: Int, groups: List[Group])
 
   def effectivePower(group: Group): Int =
     group.units.size * group.units.headOption.map(_.attack).getOrElse(0)
 
-  def parseGroup(id: Int, groupStr: String): Group = {
+  def parseGroup(armyId: Int)(id: Int, groupStr: String): Group = {
     val sizeAndHpPattern = "(\\d+) units each with (\\d+) hit points.*".r
     val weaknessesPattern = ".*weak to ([a-z, ]*)[\\);].*".r
     val immunitiesPattern = ".*immune to ([a-z, ]*)[\\);].*".r
@@ -42,33 +44,138 @@ object ImmuneSystemSimulator20XX {
 
     val modelUnit = GroupUnit(hp.toInt, attack.toInt, attackType, initiative.toInt, weaknesses, immunities)
     val units = (1 to groupSize.toInt).map(_ => modelUnit).toList
-    Group(id, units)
+    Group(armyId, id, units)
   }
 
   def parseArmies(lines: List[String]): List[Army] = {
-    def parseGroups(armyGroupStrs: List[String]): List[Group] =
+    def parseGroups(armyId: Int)(armyGroupStrs: List[(String, Int)]): List[Group] =
       armyGroupStrs.drop(1)
-        .takeWhile("".!=)
-        .zipWithIndex
-        .map { case (groupStr, id) => parseGroup(id, groupStr) }
+        .takeWhile(_._1 != "")
+        .map { case (groupStr, id) => parseGroup(armyId)(id, groupStr) }
 
-    val immuneSystemGroups = parseGroups(lines.dropWhile("Immune System:".!=))
-    val immuneSystemArmy = Army(immuneSystemGroups)
+    val indexedLines = lines.zipWithIndex
 
-    val infectionGroups = parseGroups(lines.dropWhile("Infection:".!=))
-    val infectionArmy = Army(infectionGroups)
+    val immuneSystemGroups = parseGroups(0)(indexedLines.dropWhile(_._1 != "Immune System:"))
+    val immuneSystemArmy = Army(0, immuneSystemGroups)
+
+    val infectionGroups = parseGroups(1)(indexedLines.dropWhile(_._1 != "Infection:"))
+    val infectionArmy = Army(1, infectionGroups)
 
     List(immuneSystemArmy, infectionArmy)
   }
 
-  //  def targetSelectionPhase(armies: List[Army])
+  def dealDamage(attacker: Group, defender: Group): Option[Group] = {
+    @tailrec
+    def killTheWeakest(damageToDeal: Int, remainingUnits: List[GroupUnit]): List[GroupUnit] =
+      remainingUnits match {
+        case Nil => Nil
+        case unit +: _ if damageToDeal <= 0 || unit.hp > damageToDeal => remainingUnits
+        case unit +: rest => killTheWeakest(damageToDeal - unit.hp, rest)
+      }
 
-  def fight() = {
-    //    targetSelectionPhase()
-    //    attackPhase()
+    calcTotalDamage(attacker, defender).flatMap { totalDamage =>
+      val fromWeakestToStrongest = defender.units.sortBy(_.hp)
+      val remainingUnits = killTheWeakest(totalDamage, fromWeakestToStrongest)
+      remainingUnits match {
+        case Nil => None
+        case _ => Some(defender.copy(units = remainingUnits))
+      }
+    }
   }
 
-  def solvePart1(lines: List[String]): Int = ???
+  def calcTotalDamage(attacker: Group, defender: Group): Option[Int] = {
+    val attackType = attacker.units.head.attackType
+    if (defender.units.head.immunities.contains(attackType)) {
+      None
+    } else {
+      val baseDamage = effectivePower(attacker)
+      val damage = if (defender.units.head.weaknesses.contains(attackType)) 2 * baseDamage else baseDamage
+      Some(damage)
+    }
+  }
+
+  def targetSelectionPhase(armies: List[Army]): Map[Int, Int] = {
+    val allGroups = armies.flatMap(_.groups)
+    val sortedForTargetSelection = allGroups.sortBy(group => (effectivePower(group), group.units.head.initiative)).reverse
+
+    @tailrec
+    def selectTargets(queue: List[Group], availableTargets: List[Group], selections: Map[Int, Int]): Map[Int, Int] =
+      queue match {
+        case Nil => selections
+        case _ if availableTargets.isEmpty => selections
+        case selecting +: rest =>
+          val selectedTarget = selectTarget(selecting, availableTargets)
+          selectedTarget match {
+            case None => selectTargets(rest, availableTargets, selections)
+            case Some(target) =>
+              val remainingTargets = availableTargets.filterNot(selectedTarget.==)
+              val updatedSelections = selections + (selecting.groupId -> target.groupId)
+              selectTargets(rest, remainingTargets, updatedSelections)
+          }
+      }
+
+    def selectTarget(selecting: Group, remainingTargets: List[Group]): Option[Group] = {
+      val enemyGroups = remainingTargets.filter(_.armyId != selecting.armyId)
+      enemyGroups.sortBy { enemyGroup =>
+        (calcTotalDamage(selecting, enemyGroup), effectivePower(enemyGroup))
+      }.headOption
+    }
+
+    selectTargets(sortedForTargetSelection, allGroups, Map.empty)
+  }
+
+  @tailrec
+  def attack(attackers: List[Group], targetSelections: Map[Int, Int], alreadyAttacked: List[Group]): List[Group] =
+    attackers match {
+      case Nil => alreadyAttacked
+      case attacker +: rest =>
+        val defenderId = targetSelections(attacker.groupId)
+        val defender = (attackers ++ alreadyAttacked).find(_.groupId == defenderId)
+        val defenderAfterAttackOpt = defender.flatMap(defenderOpt => dealDamage(attacker, defenderOpt))
+        defenderAfterAttackOpt match {
+          case None => attack(rest.filterNot(defenderId == _.groupId), targetSelections, (attacker +: alreadyAttacked).filterNot(defenderId == _.groupId))
+          case Some(defenderAfterAttack) =>
+            val restAfterAttack =
+              if (rest.contains(defender.get)) {
+                val indexOfDefender = rest.indexOf(defender.get)
+                rest.updated(indexOfDefender, defenderAfterAttack)
+              } else rest
+            val resultAfterAttack =
+              if (alreadyAttacked.contains(defender.get)) {
+                val indexOfDefender = alreadyAttacked.indexOf(defender.get)
+                alreadyAttacked.updated(indexOfDefender, defenderAfterAttack)
+              } else alreadyAttacked
+            attack(restAfterAttack, targetSelections, attacker +: resultAfterAttack)
+        }
+    }
+
+  def attackPhase(armies: List[Army], targetSelections: Map[Int, Int]): List[Army] = {
+    def attackingOrder(groups: List[Group]): List[Group] = groups.sortBy(_.units.head.initiative).reverse
+
+    val allGroups = armies.flatMap(_.groups)
+    val groupsInAttackingOrder = attackingOrder(allGroups)
+
+    val groupsAfterAttacks = attack(groupsInAttackingOrder, targetSelections, List.empty)
+    val armiesAfterAttack = groupsAfterAttacks.groupBy(_.armyId).map { case (armyId, groups) => Army(armyId, groups) }
+    armiesAfterAttack.toList
+  }
+
+  @tailrec
+  def fight(armies: List[Army]): Army = {
+    println("FIGHT!")
+    val attackerWithDefenderPairs = targetSelectionPhase(armies)
+    val armiesAfterAttackPhase = attackPhase(armies, attackerWithDefenderPairs)
+    armiesAfterAttackPhase match {
+      case List(winner) => winner
+      case _ => fight(armiesAfterAttackPhase)
+    }
+  }
+
+  def solvePart1(lines: List[String]): Int = {
+    val armies = parseArmies(lines)
+    val winningArmy = fight(armies)
+    winningArmy.groups.map(_.units.length).sum
+  }
 
   def main(args: Array[String]): Unit = {
     val input = InputLoader.loadLines("day24-input")
