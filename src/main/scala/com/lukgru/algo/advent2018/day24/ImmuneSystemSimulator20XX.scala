@@ -181,10 +181,34 @@ object ImmuneSystemSimulator20XX {
     winningArmy.groups.map(_.units.length).sum
   }
 
+  def solvePart2(lines: List[String]): Int = {
+    val armies = parseArmies(lines)
+
+    @tailrec
+    def iterUntilImmuneSystemWins(armies: List[Army], immuneSystemAttackBoost: Int): Army = {
+      println(s"Boost value: $immuneSystemAttackBoost")
+      val immuneSystemArmy = armies.find(a => a.id == 0).get
+      val infectionArmy = armies.find(a => a.id == 1).get
+      val boostedGroups = immuneSystemArmy.groups.map { group =>
+        group.copy(units = group.units.map(u => u.copy(attack = u.attack + immuneSystemAttackBoost)))
+      }
+      val boostedImmuneSystemArmy = immuneSystemArmy.copy(groups = boostedGroups)
+      val winningArmy = fight(List(boostedImmuneSystemArmy, infectionArmy))
+      if (winningArmy.id == 0) winningArmy
+      else iterUntilImmuneSystemWins(armies, immuneSystemAttackBoost + 1)
+    }
+
+    val solution = iterUntilImmuneSystemWins(armies, 0)
+    solution.groups.map(_.units.length).sum
+  }
+
   def main(args: Array[String]): Unit = {
     val input = InputLoader.loadLines("day24-input")
     val solution1 = solvePart1(input)
     println(solution1)
+
+    val solution2 = solvePart2(input)
+    println(solution2)
   }
 
 }
