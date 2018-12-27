@@ -1,6 +1,7 @@
 package com.lukgru.algo.advent2018.day24
 
 import com.lukgru.algo.advent2018.day24.ImmuneSystemSimulator20XX.GroupUnit
+import com.lukgru.algo.advent2018.utils.InputLoader
 import org.scalatest.FunSuite
 
 class ImmuneSystemSimulator20XXTest extends FunSuite {
@@ -62,5 +63,16 @@ class ImmuneSystemSimulator20XXTest extends FunSuite {
 
     //then
     assert(solution == 5216)
+  }
+
+  test("should solve part 1") {
+    //given
+    val input = InputLoader.loadLines("day24-input")
+
+    //when
+    val solution = ImmuneSystemSimulator20XX.solvePart1(input)
+
+    //then
+    assert(solution == 15470)
   }
 }

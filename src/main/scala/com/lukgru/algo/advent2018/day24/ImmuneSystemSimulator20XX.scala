@@ -108,7 +108,7 @@ object ImmuneSystemSimulator20XX {
           selectedTarget match {
             case None => selectTargets(rest, availableTargets, selections)
             case Some(target) =>
-              val remainingTargets = availableTargets.filterNot(selectedTarget.==)
+              val remainingTargets = availableTargets.filterNot(target.==)
               val updatedSelections = selections + (selecting.groupId -> target.groupId)
               selectTargets(rest, remainingTargets, updatedSelections)
           }
@@ -118,7 +118,7 @@ object ImmuneSystemSimulator20XX {
       val enemyGroups = remainingTargets.filter(_.armyId != selecting.armyId)
       enemyGroups.sortBy { enemyGroup =>
         (calcTotalDamage(selecting, enemyGroup), effectivePower(enemyGroup))
-      }.headOption
+      }.lastOption
     }
 
     selectTargets(sortedForTargetSelection, allGroups, Map.empty)
@@ -129,11 +129,16 @@ object ImmuneSystemSimulator20XX {
     attackers match {
       case Nil => alreadyAttacked
       case attacker +: rest =>
-        val defenderId = targetSelections(attacker.groupId)
-        val defender = (attackers ++ alreadyAttacked).find(_.groupId == defenderId)
+        val defenderIdOpt = targetSelections.get(attacker.groupId)
+        val defender = defenderIdOpt.flatMap{ defenderId =>
+          (attackers ++ alreadyAttacked).find(_.groupId == defenderId)
+        }
         val defenderAfterAttackOpt = defender.flatMap(defenderOpt => dealDamage(attacker, defenderOpt))
         defenderAfterAttackOpt match {
-          case None => attack(rest.filterNot(defenderId == _.groupId), targetSelections, (attacker +: alreadyAttacked).filterNot(defenderId == _.groupId))
+          case None =>
+            val filteredRest = rest.filterNot(g => defenderIdOpt.contains(g.groupId))
+            val filteredAlreadyAttacked = (attacker +: alreadyAttacked).filterNot(g => defenderIdOpt.contains(g.groupId))
+            attack(filteredRest, targetSelections, filteredAlreadyAttacked)
           case Some(defenderAfterAttack) =>
             val restAfterAttack =
               if (rest.contains(defender.get)) {
@@ -162,7 +167,6 @@ object ImmuneSystemSimulator20XX {
 
   @tailrec
   def fight(armies: List[Army]): Army = {
-    println("FIGHT!")
     val attackerWithDefenderPairs = targetSelectionPhase(armies)
     val armiesAfterAttackPhase = attackPhase(armies, attackerWithDefenderPairs)
     armiesAfterAttackPhase match {
