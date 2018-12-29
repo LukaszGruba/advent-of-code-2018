@@ -6,6 +6,8 @@ import com.lukgru.algo.advent2018.utils.InputLoader
 
 object ExperimentalEmergencyTeleportation {
 
+  val printingEnabled: Boolean = true
+
   case class Position(x: Int, y: Int, z: Int)
 
   case class Nanobot(pos: Position, signalRadius: Int)
@@ -16,7 +18,7 @@ object ExperimentalEmergencyTeleportation {
     val nanobotPattern = "pos=<(-?\\d*),(-?\\d*),(-?\\d*)>, r=(-?\\d*)".r
     lines.map { line =>
       val nanobotPattern(x, y, z, r) = line
-      Nanobot(Position(x.toInt/1000, y.toInt/1000, z.toInt/1000), r.toInt/1000)
+      Nanobot(Position(x.toInt, y.toInt, z.toInt), r.toInt)
     }.toSet
   }
 
@@ -72,7 +74,7 @@ object ExperimentalEmergencyTeleportation {
     val bestProbePoints = winningRegions.toSet.seq
 
     if (bestProbePoints.size == probePoints.size) {
-//      if (resolution > 10) println(s"didn't find better region in resolution = $resolution")
+      if (printingEnabled && resolution > 10) println(s"didn't find better region in resolution = $resolution")
       val closestPos = findClosestPositionTo(bestProbePoints.map(_._1))(myPosition)
       bestProbePoints.filter(_._1 == closestPos)
         .map { case (a, b) => (a, b.size) }
@@ -80,7 +82,7 @@ object ExperimentalEmergencyTeleportation {
     else if (resolution == 1) bestProbePoints.map { case (a, b) => (a, b.size) }
     else {
       val newResolution = Math.max(resolution / 2, 1)
-//      println(s"Invoking recursively for ${bestProbePoints.size} regions with resolution = $newResolution")
+      if (printingEnabled) println(s"Invoking recursively for ${bestProbePoints.size} regions with resolution = $newResolution")
       val s =
         bestProbePoints.flatMap { case (candidatePos, _) =>
           val searchRegion = searchRegionFromAroundPosition(candidatePos, resolution / 2)
@@ -88,7 +90,7 @@ object ExperimentalEmergencyTeleportation {
         }.groupBy { case (_, reaching) => reaching }
           .maxBy { case (size, _) => size }
           ._2
-//      println(s"Exiting recursive processing of subregions with resolution = $newResolution")
+      if (printingEnabled) println(s"Exiting recursive processing of subregions with resolution = $newResolution")
       s
     }
   }
