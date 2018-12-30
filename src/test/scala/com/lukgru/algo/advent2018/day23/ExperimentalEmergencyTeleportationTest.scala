@@ -34,4 +34,20 @@ class ExperimentalEmergencyTeleportationTest extends FunSuite {
     assert(solution == 36)
   }
 
+  /**
+    * Best position: Position(15732653,37370828,40027284)
+    * Number of intersecting: 974
+    * Solution: 93130765
+    */
+  test("should solve part 2") {
+    //given
+    val input = InputLoader.loadLines("day23-input")
+
+    //when
+    val solution = ExperimentalEmergencyTeleportation.solvePart2(input)
+
+    //then
+    assert(solution == 93130765)
+  }
+
 }

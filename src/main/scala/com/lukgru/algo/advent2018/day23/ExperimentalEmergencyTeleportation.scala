@@ -1,7 +1,5 @@
 package com.lukgru.algo.advent2018.day23
 
-import java.util.Date
-
 import com.lukgru.algo.advent2018.utils.InputLoader
 
 object ExperimentalEmergencyTeleportation {
@@ -24,6 +22,8 @@ object ExperimentalEmergencyTeleportation {
 
   def calcDistance(p1: Position, p2: Position): Int =
     Math.abs(p1.x - p2.x) + Math.abs(p1.y - p2.y) + Math.abs(p1.z - p2.z)
+
+  def distFromCenter(p: Position): Int = Math.abs(p.x) + Math.abs(p.y) + Math.abs(p.z)
 
   def isInRange(nanobot: Nanobot, dest: Position): Boolean =
     nanobot.signalRadius >= calcDistance(nanobot.pos, dest)
@@ -83,8 +83,9 @@ object ExperimentalEmergencyTeleportation {
     else {
       val newResolution = Math.max(resolution / 2, 1)
       if (printingEnabled) println(s"Invoking recursively for ${bestProbePoints.size} regions with resolution = $newResolution")
+      val limitedBestPoints = bestProbePoints.toList.sortBy(probePoint => calcDistance(probePoint._1, myPosition)).take(2).toSet
       val s =
-        bestProbePoints.flatMap { case (candidatePos, _) =>
+        limitedBestPoints.flatMap { case (candidatePos, _) =>
           val searchRegion = searchRegionFromAroundPosition(candidatePos, resolution / 2)
           findBest3DArea(myPosition)(nanobots, newResolution, searchRegion)
         }.groupBy { case (_, reaching) => reaching }
@@ -97,8 +98,13 @@ object ExperimentalEmergencyTeleportation {
 
   def findPositionsInRangeOfTheMostNanobots(myPosition: Position)(allNanobots: Set[Nanobot]): Set[Position] = {
     val minRadius = allNanobots.map(_.signalRadius).min
-    val resolution = Math.max(minRadius / 30, 1)
-    val (minX, maxX, minY, maxY, minZ, maxZ) = getBoundaries(allNanobots)
+    //    val resolution = Math.max(minRadius / 2, 1)
+    //    val c = Position(15750009,37370828,40044640)
+    val c = Position(15732653, 37370828, 40027284) //974
+    val m = 100
+    val resolution = m / 10
+    val (minX, maxX, minY, maxY, minZ, maxZ) = (c.x - m, c.x + m, c.y - m, c.y + m, c.z - m, c.z + m)
+    //    val (minX, maxX, minY, maxY, minZ, maxZ) = getBoundaries(allNanobots)
     val regionWithAllNanobots = Region(
       minX to maxX,
       minY to maxY,
@@ -115,6 +121,9 @@ object ExperimentalEmergencyTeleportation {
     val nanobots = parseNanobots(lines)
     val positions = findPositionsInRangeOfTheMostNanobots(myPosition)(nanobots)
     val bestPosition = findClosestPositionTo(positions)(myPosition)
+    val intersecting = nanobots.filter(n => isInRange(n, bestPosition))
+    println(s"Best position: $bestPosition")
+    println(s"Number of intersecting: ${intersecting.size}")
     calcDistance(myPosition, bestPosition)
   }
 
@@ -123,9 +132,21 @@ object ExperimentalEmergencyTeleportation {
     val solution1 = countNanobotsInRangeOfTheStrongestOne(input)
     println(solution1)
 
-    println(new Date())
+    val start = System.currentTimeMillis()
     val solution2 = solvePart2(input)
     println(solution2)
-    println(new Date())
+    val stop = System.currentTimeMillis()
+    println(s"Total time: ${(stop - start) / 1000}s")
+  }
+
+  ////////////////////////////////////////////////
+
+  case class Clique(ps: Set[Nanobot])
+
+  def areIntersecting(n1: Nanobot, n2: Nanobot): Boolean =
+    calcDistance(n1.pos, n2.pos) < (n1.signalRadius + n2.signalRadius)
+
+  def createIntersectionGraph(nanobots: Set[Nanobot]): Map[Nanobot, Set[Nanobot]] = {
+    ???
   }
 }
